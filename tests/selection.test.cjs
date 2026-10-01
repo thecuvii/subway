@@ -7,6 +7,7 @@ const ts = require('typescript')
 const vue = require('vue')
 const pinia = require('pinia')
 const { parse, compileScript } = require('@vue/compiler-sfc')
+const gcoord = require('gcoord')
 
 const root = path.resolve(__dirname, '..')
 const cities = [
@@ -165,18 +166,114 @@ test('选中线路仍可悬停，换乘站包含未选中的同城线路', () =>
   interaction.setHoveringStation(station, line)
   assert.equal(interaction.hoveringLine.id, line.id)
   assert.equal(interaction.hoveringStation.name, station.name)
-  assert.deepEqual(Array.from(subwayModule.getStationLines(app.dataset, line, station), item => item.id), ['a', 'b'])
+  assert.deepEqual(Array.from(subwayModule.getStationLines(app.dataset, line, station), item => item.id), ['a', 'b', 'c'])
   assert.equal(subwayModule.getLineLabel(app.dataset, line), '广州 · 1号线')
   assert.equal(subwayModule.getLineLabel(app.dataset, app.dataset[1].lines[0]), '深圳 · 1号线')
 })
 
+function getRealDataset() {
+  const raw = JSON.parse(fs.readFileSync(path.join(root, 'datasource/data.json'), 'utf8'))
+  return raw.map(city => ({
+    ...city,
+    lines: city.lines.map(line => ({
+      ...line,
+      cityId: city.id,
+      stations: line.stations.map(station => ({ ...station, coord: gcoord.transform([station.lng, station.lat], gcoord.GCJ02, gcoord.WGS84) })),
+    })),
+  }))
+}
+
 test('真实数据公园前换乘站包含广州1号线和2号线', () => {
   const { subwayModule } = setup()
-  const raw = JSON.parse(fs.readFileSync(path.join(root, 'datasource/data.json'), 'utf8'))
-  const dataset = raw.map(city => ({ ...city, lines: city.lines.map(line => ({ ...line, cityId: city.id })) }))
+  const dataset = getRealDataset()
   const city = dataset.find(city => city.id === '4401')
   const line = city.lines.find(line => line.name === '1号线')
   const station = line.stations.find(station => station.name === '公园前')
   const names = subwayModule.getStationLines(dataset, line, station).map(line => line.name)
   assert.deepEqual(Array.from(names), ['1号线', '2号线'])
+})
+
+test('真实数据花桥跨上海和苏州换乘，不包含成都与长沙同名站', () => {
+  const { subwayModule } = setup()
+  const dataset = getRealDataset()
+  const line = dataset.find(city => city.name === '上海').lines.find(line => line.name === '11号线' && line.stations.some(station => station.name === '花桥'))
+  const station = line.stations.find(station => station.name === '花桥')
+  const transfers = subwayModule.getStationLines(dataset, line, station)
+  const labels = Array.from(transfers, line => subwayModule.getLineLabel(dataset, line))
+  assert.deepEqual(labels, ['上海 · 11号线', '苏州 · 11号线'])
+  const suzhouLine = transfers.find(candidate => candidate.cityId !== line.cityId)
+  const suzhouStation = suzhouLine.stations.find(station => station.name === '花桥')
+  assert.equal(subwayModule.getStationLines(dataset, suzhouLine, suzhouStation).length, 2)
+})
+
+test('真实数据杭州奥体中心不会与37公里外的绍兴奥体中心误报换乘', () => {
+  const { subwayModule } = setup()
+  const dataset = getRealDataset()
+  const city = dataset.find(city => city.name === '杭州')
+  const line = city.lines.find(line => line.name === '6号线')
+  const station = line.stations.find(station => station.name === '奥体中心')
+  assert.deepEqual(Array.from(subwayModule.getStationLines(dataset, line, station), line => line.name), ['6号线', '7号线'])
+  const shaoxingLine = city.lines.find(line => line.name === '绍兴1号线')
+  const shaoxingStation = shaoxingLine.stations.find(station => station.name === '奥体中心')
+  assert.deepEqual(Array.from(subwayModule.getStationLines(dataset, shaoxingLine, shaoxingStation), line => line.name), ['绍兴1号线'])
+})
+
+test('真实数据罗湖包含深圳1号线与香港东铁线的跨境连接', () => {
+  const { subwayModule } = setup()
+  const dataset = getRealDataset()
+  const line = dataset.find(city => city.name === '深圳').lines.find(line => line.name === '1号线/罗宝线')
+  const station = line.stations.find(station => station.name === '罗湖')
+  assert.deepEqual(Array.from(subwayModule.getStationLines(dataset, line, station), line => subwayModule.getLineLabel(dataset, line)), ['深圳 · 1号线/罗宝线', '香港 · 东铁线'])
+})
+
+test('不会通过删除括号后缀把上海浦电路两座独立站合并', () => {
+  const { subwayModule } = setup()
+  const dataset = getRealDataset()
+  const line = dataset.find(city => city.name === '上海').lines.find(line => line.name === '4号线')
+  const station = line.stations.find(station => station.name === '浦电路(4号线)')
+  assert.deepEqual(Array.from(subwayModule.getStationLines(dataset, line, station), line => line.name), ['4号线'])
+})
+
+test('距离阈值按米计算，同名近站可换乘，远站或异名近站不可换乘', () => {
+  const { subwayModule } = setup()
+  const station = { id: 'same-id', name: '换乘站', coord: [0, 0] }
+  const latitudeAtMeters = meters => meters / 6371000 * 180 / Math.PI
+  const line = { id: 'source', cityId: 'a', name: '源线路', stations: [station] }
+  const nearby = { ...line, id: 'nearby', cityId: 'b', stations: [{ ...station, id: 'different-id', coord: [0, latitudeAtMeters(subwayModule.TRANSFER_DISTANCE_METERS - 1)] }] }
+  const far = { ...line, id: 'far', stations: [{ ...station, coord: [0, latitudeAtMeters(subwayModule.TRANSFER_DISTANCE_METERS + 1)] }] }
+  const renamed = { ...nearby, id: 'renamed', stations: [{ ...station, name: '另一个站' }] }
+  const dataset = [{ id: 'a', lines: [line, far] }, { id: 'b', lines: [nearby, renamed] }]
+  assert.deepEqual(Array.from(subwayModule.getStationLines(dataset, line, station), line => line.id), ['source', 'nearby'])
+})
+
+test('全量共享站点ID的换乘关系没有被距离与名称条件遗漏', () => {
+  const { subwayModule } = setup()
+  const dataset = getRealDataset()
+  const stationGroups = new Map()
+  for (const city of dataset) {
+    for (const line of city.lines) {
+      for (const station of line.stations) {
+        if (!stationGroups.has(station.id))
+          stationGroups.set(station.id, [])
+        stationGroups.get(station.id).push({ line, station })
+      }
+    }
+  }
+  let checkedPairs = 0
+  for (const records of stationGroups.values()) {
+    if (records.length < 2)
+      continue
+    for (let i = 0; i < records.length; i++) {
+      const source = records[i]
+      const transfers = subwayModule.getStationLines(dataset, source.line, source.station)
+      for (let j = i + 1; j < records.length; j++) {
+        const target = records[j]
+        if (source.line.id === target.line.id)
+          continue
+        assert(transfers.some(line => line.cityId === target.line.cityId && line.name === target.line.name), `${source.station.name}: ${source.line.name} → ${target.line.name}`)
+        checkedPairs++
+      }
+    }
+  }
+  assert.equal(checkedPairs, 1158)
 })
