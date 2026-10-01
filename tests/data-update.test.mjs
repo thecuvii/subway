@@ -2,8 +2,29 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
-import { convertCity, parseStation, stationsUnchanged } from '../scripts/prepare-subway-update.mjs'
+import { convertCity, parseStation, stationsUnchanged } from '../scripts/subway-conversion.mjs'
 import { convertApiLine, parsePolyline, stationPathDistance } from '../scripts/apply-subway-update.mjs'
+import { assertGeometryFreshness } from '../scripts/fetch-subway-geometry.mjs'
+import { parseUpdateArgs } from '../scripts/update-subway.mjs'
+
+test('update entry requires explicit apply and validates omission arguments', () => {
+  assert.equal(parseUpdateArgs([]).command, 'help')
+  assert.equal(parseUpdateArgs(['--help']).command, 'help')
+  assert.equal(parseUpdateArgs(['verify']).command, 'verify')
+  assert.deepEqual([...parseUpdateArgs(['apply', '--omit-line=7101:900000192971']).omissions], ['7101:900000192971'])
+  for (const args of [['unknown'], ['verify', '--omit-line=7101:900000192971'], ['apply', '--omit-line=invalid'], ['apply', '--force']])
+    assert.throws(() => parseUpdateArgs(args))
+})
+
+test('geometry must be fetched at or after its catalog snapshot', () => {
+  const catalogTime = '2026-10-01T08:00:00.000Z'
+  assert.throws(() => assertGeometryFreshness({ fetchedAt: '2026-09-30T08:00:00.000Z' }, catalogTime), /predates/)
+  for (const fetchedAt of [undefined, '', 'invalid'])
+    assert.throws(() => assertGeometryFreshness({ fetchedAt }, catalogTime), /Invalid/)
+  assert.throws(() => assertGeometryFreshness({ fetchedAt: catalogTime }, 'invalid'), /Invalid/)
+  assert.doesNotThrow(() => assertGeometryFreshness({ fetchedAt: catalogTime }, catalogTime))
+  assert.doesNotThrow(() => assertGeometryFreshness({ fetchedAt: '2026-10-01T09:00:00.000Z' }, catalogTime))
+})
 
 const station = (si, n, sl, su = '1') => ({ si, n, sl, su })
 const source = { adcode: '3306', cityname: '绍兴市', spell: 'shaoxing' }

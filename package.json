@@ -11,13 +11,8 @@
     "postinstall": "nuxi prepare",
     "generate": "nuxi generate",
     "start:generate": "npx serve .output/public",
-    "test:data": "node --test tests/data-update.test.mjs",
-    "test:transfers": "node --test tests/transfer-stations.test.cjs",
-    "data:lines": "node scripts/fetch-subway.mjs",
-    "data:prepare": "node scripts/prepare-subway-update.mjs",
-    "data:polyline": "node scripts/fetch-subway-geometry.mjs",
-    "data:verify": "node scripts/apply-subway-update.mjs",
-    "data:apply": "node scripts/apply-subway-update.mjs --apply"
+    "data:update": "node scripts/update-subway.mjs",
+    "test": "node --test tests/data-update.test.mjs tests/transfer-stations.test.cjs"
   },
   "dependencies": {
     "@deck.gl/core": "^8.9.35",

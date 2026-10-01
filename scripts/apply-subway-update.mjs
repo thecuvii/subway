@@ -3,8 +3,8 @@ import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { cacheDirectory, readSources, root } from './fetch-subway.mjs'
-import { geometryDirectory, geometryEndpoint } from './fetch-subway-geometry.mjs'
-import { parseStation } from './prepare-subway-update.mjs'
+import { assertGeometryFreshness, geometryDirectory, geometryEndpoint } from './fetch-subway-geometry.mjs'
+import { parseStation } from './subway-conversion.mjs'
 
 const nonRailTypes = new Set(['普通公交', '无轨电车', '旅游专线', '机场大巴', '社区专车', '轮渡', '索道交通'])
 const sha256 = text => createHash('sha256').update(text).digest('hex')
@@ -86,6 +86,7 @@ export async function stageVerifiedUpdate() {
     for (const diagram of data.l.filter(line => line.su === '1')) {
       try {
         const cached = JSON.parse(await readFile(path.join(geometryDirectory, `${diagram.ls}.json`), 'utf8'))
+        assertGeometryFreshness(cached, manifest.catalog.fetchedAt)
         if (cached.sha256 && cached.sha256 !== sha256(JSON.stringify(cached.data)))
           throw new Error('Geometry cache checksum mismatch')
         if (cached.data.status !== '1')
@@ -129,8 +130,7 @@ export async function stageVerifiedUpdate() {
     }),
   }
   await writeFile(path.join(cacheDirectory, 'verified-candidate.json'), `${JSON.stringify(cities, null, 2)}\n`)
-  await mkdir(path.join(root, 'datasource/update-staging'), { recursive: true })
-  await writeFile(path.join(root, 'datasource/update-staging/geometry-report.json'), `${JSON.stringify(report, null, 2)}\n`)
+  await writeFile(path.join(cacheDirectory, 'geometry-report.json'), `${JSON.stringify(report, null, 2)}\n`)
   console.log(JSON.stringify({ status: report.status, previous: report.previous, candidate: report.candidate, excluded: excluded.length, unresolved: unresolved.length }, null, 2))
   return { report, cities, originalText }
 }
@@ -139,7 +139,7 @@ export async function applyVerifiedUpdate(allowedOmissions = new Set()) {
   const { report, cities, originalText } = await stageVerifiedUpdate()
   const unapproved = report.unresolved.filter(line => !allowedOmissions.has(`${line.cityId}:${line.id}`))
   if (unapproved.length)
-    throw new Error(`Refusing to overwrite application data: ${unapproved.length} unresolved lines without an explicit --omit-line=cityId:lineId; see geometry-report.json`)
+    throw new Error(`Refusing to overwrite application data: ${unapproved.length} unresolved lines without an explicit --omit-line=cityId:lineId; see .data-cache/amap/geometry-report.json`)
   if (cities.length < report.previous.regions || report.candidate.lines < report.previous.lines)
     throw new Error('Updated coverage unexpectedly shrank; manual review is required')
   const currentText = await readFile(path.join(root, 'datasource/data.json'), 'utf8')
@@ -151,7 +151,7 @@ export async function applyVerifiedUpdate(allowedOmissions = new Set()) {
     if (error.code !== 'EEXIST')
       throw error
   })
-  const newText = `${JSON.stringify(cities)}\n`
+  const newText = `${JSON.stringify(cities, null, 2)}\n`
   const temporary = path.join(root, 'datasource/data.json.tmp')
   await writeFile(temporary, newText)
   await rename(temporary, path.join(root, 'datasource/data.json'))
@@ -160,7 +160,7 @@ export async function applyVerifiedUpdate(allowedOmissions = new Set()) {
   report.appliedAt = new Date().toISOString()
   report.appliedSha256 = sha256(newText)
   await writeFile(path.join(root, 'datasource/metadata.json'), `${JSON.stringify(report, null, 2)}\n`)
-  await writeFile(path.join(root, 'datasource/update-staging/geometry-report.json'), `${JSON.stringify(report, null, 2)}\n`)
+  await writeFile(path.join(cacheDirectory, 'geometry-report.json'), `${JSON.stringify(report, null, 2)}\n`)
   console.log(`Applied update; old data backed up as .data-cache/amap/backups/${report.originalSha256}.json`)
   return report
 }

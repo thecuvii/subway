@@ -8,6 +8,15 @@ import { cacheDirectory, readSources, root } from './fetch-subway.mjs'
 export const geometryDirectory = path.join(cacheDirectory, 'geometry')
 export const geometryEndpoint = 'https://restapi.amap.com/v3/bus/lineid'
 
+export function assertGeometryFreshness(cached, catalogFetchedAt) {
+  const geometryTime = Date.parse(cached.fetchedAt)
+  const catalogTime = Date.parse(catalogFetchedAt)
+  if (!Number.isFinite(geometryTime) || !Number.isFinite(catalogTime))
+    throw new Error('Invalid geometry or catalog timestamp; fetch sources and geometry again')
+  if (geometryTime < catalogTime)
+    throw new Error('Geometry cache predates the catalog; fetch geometry before applying')
+}
+
 export async function loadKey() {
   let local = {}
   try {
@@ -70,8 +79,13 @@ export async function fetchGeometry() {
       let cached
       try {
         cached = JSON.parse(await readFile(cacheFile, 'utf8'))
-        if (cached.data?.status !== '1' || !Array.isArray(cached.data.buslines)
-          || new Date(cached.fetchedAt) < new Date(sourceManifest.catalog.fetchedAt))
+        try {
+          assertGeometryFreshness(cached, sourceManifest.catalog.fetchedAt)
+        }
+        catch {
+          cached = null
+        }
+        if (cached && (cached.data?.status !== '1' || !Array.isArray(cached.data.buslines)))
           cached = null
       }
       catch (error) {

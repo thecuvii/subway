@@ -148,6 +148,11 @@ const report = {
   },
   groups: results,
 }
-fs.writeFileSync(path.join(root, 'datasource/update-staging/transfer-audit.json'), `${JSON.stringify(report, null, 2)}\n`)
+const reportDirectory = path.join(root, '.data-cache/amap')
+fs.mkdirSync(reportDirectory, { recursive: true })
+fs.writeFileSync(path.join(reportDirectory, 'transfer-audit.json'), `${JSON.stringify(report, null, 2)}\n`)
 const compact = group => ({ names: [...new Set(group.members.map(member => `${member.city} ${member.name}`))], method: group.method, movement: Math.round(group.maxMovementMeters), offPath: Math.round(group.maxPathDistanceMeters), diameter: Math.round(group.diameterMeters), members: group.members.map(member => ({ line: member.line, movement: Math.round(member.movementMeters), offPath: Math.round(member.mergedPathDistanceMeters) })) })
 process.stdout.write(`${JSON.stringify({ summary: report.summary, largestMovement: results.slice(0, 12).map(compact), largestPathDistance: [...results].sort((a, b) => b.maxPathDistanceMeters - a.maxPathDistanceMeters).slice(0, 8).map(compact), closeStopIntersections: results.filter(group => group.flags.includes('intersection-moves-already-close-stops')).slice(0, 8).map(compact) }, null, 2)}\n`)
+
+if (report.summary.acceptance.failedGroups)
+  process.exitCode = 1
