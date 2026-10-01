@@ -1,6 +1,6 @@
 # 合并点位置检查
 
-检查日期：2026 年 10 月 1 日。被检查版本为 `d868087`，采用该版本的完整轨迹、WGS84 原始站点位置及运行时合并算法。此次检查没有修改合并算法或原始数据；当前预览仍显示被检查的算法。
+检查日期：2026 年 10 月 1 日。本文保留对历史版本 `d868087` 的检查结论。后续已修正不同名别名合并与局部平行轨迹误选交点问题，当前算法和复算结果见 [换乘站展示位置](./transfer-stations.md)。
 
 ## 结论
 
@@ -65,4 +65,4 @@ OSM 是独立社区数据，不是运营方测绘成果；这里用于检查合�
 2. 共线或支线重叠线路不要仅凭微小轨迹偏差产生的交点移动站点。
 3. 对分离站台、端点和跨口岸组，保留统一位置仍可能产生数百米离轨距离。应明确其为换乘组标记，并考虑保留线路真实站点、显示连线，或配置人工确认的统一位置。这属于展示取舍，需要单独确定，不能只通过收紧交点阈值解决。
 
-完整结果见 [transfer-audit.json](./transfer-audit.json)，OSM 节点与线路关系证据见 [transfer-audit-evidence.json](./transfer-audit-evidence.json)。缓存中保留原始 XML；证据文件包含响应校验值。复算全量几何检查：`node scripts/audit-transfer-stations.cjs`。该命令不重新下载 OSM 证据。
+历史版本的完整几何结果保存在 Git 提交 `6a5d749` 的 `datasource/update-staging/transfer-audit.json`；同路径的当前文件为修正后的复算结果。OSM 节点与线路关系证据见 [transfer-audit-evidence.json](./transfer-audit-evidence.json)，其中 `mergedDistance` 对应历史版本，`correctedMergedDistance` 对应修正结果。缓存中保留原始 XML；证据文件包含响应校验值。复算当前全量几何检查：`node scripts/audit-transfer-stations.cjs`。该命令不重新下载 OSM 证据。

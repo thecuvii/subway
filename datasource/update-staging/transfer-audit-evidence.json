@@ -24,7 +24,8 @@
               "distance": 122.72949263110773
             }
           ],
-          "url": "https://www.openstreetmap.org/node/5017605278"
+          "url": "https://www.openstreetmap.org/node/5017605278",
+          "correctedMergedDistance": 117.3437726703578
         },
         {
           "id": "5017605281",
@@ -50,7 +51,8 @@
               "distance": 57.7433482960408
             }
           ],
-          "url": "https://www.openstreetmap.org/node/5017605281"
+          "url": "https://www.openstreetmap.org/node/5017605281",
+          "correctedMergedDistance": 54.488778521532645
         },
         {
           "id": "5017605282",
@@ -76,10 +78,15 @@
               "distance": 55.679315566220815
             }
           ],
-          "url": "https://www.openstreetmap.org/node/5017605282"
+          "url": "https://www.openstreetmap.org/node/5017605282",
+          "correctedMergedDistance": 53.86492379595973
         }
       ],
-      "responseSha256": "039fca7c72a1a02996985240276c9e80d26c471fa00e611488cf9d0fae6c0c59"
+      "responseSha256": "039fca7c72a1a02996985240276c9e80d26c471fa00e611488cf9d0fae6c0c59",
+      "correctedMergedCoord": [
+        121.52341659326885,
+        31.21371288284584
+      ]
     },
     {
       "name": "清河站",
@@ -102,7 +109,8 @@
               "distance": 463.31096462532906
             }
           ],
-          "url": "https://www.openstreetmap.org/node/6941409382"
+          "url": "https://www.openstreetmap.org/node/6941409382",
+          "correctedMergedDistance": 463.7577445446862
         },
         {
           "id": "6941598123",
@@ -128,7 +136,8 @@
               "distance": 13.007963050811107
             }
           ],
-          "url": "https://www.openstreetmap.org/node/6941598123"
+          "url": "https://www.openstreetmap.org/node/6941598123",
+          "correctedMergedDistance": 5.080823105599848
         },
         {
           "id": "6941850418",
@@ -148,7 +157,8 @@
               "distance": 196.61495397053628
             }
           ],
-          "url": "https://www.openstreetmap.org/node/6941850418"
+          "url": "https://www.openstreetmap.org/node/6941850418",
+          "correctedMergedDistance": 197.09509823738824
         },
         {
           "id": "8628640150",
@@ -168,10 +178,15 @@
               "distance": 373.50179244521814
             }
           ],
-          "url": "https://www.openstreetmap.org/node/8628640150"
+          "url": "https://www.openstreetmap.org/node/8628640150",
+          "correctedMergedDistance": 377.1613698733496
         }
       ],
-      "responseSha256": "691df42f9d7ee4bedf8bd9c41bd48180510c80b1887d515499a8ee0a39a7ef61"
+      "responseSha256": "691df42f9d7ee4bedf8bd9c41bd48180510c80b1887d515499a8ee0a39a7ef61",
+      "correctedMergedCoord": [
+        116.30877122512871,
+        40.03984603677519
+      ]
     },
     {
       "name": "淡江大学",
@@ -194,7 +209,8 @@
               "distance": 21.59679202468438
             }
           ],
-          "url": "https://www.openstreetmap.org/node/10233587976"
+          "url": "https://www.openstreetmap.org/node/10233587976",
+          "correctedMergedDistance": 32.458796121798365
         },
         {
           "id": "10233587977",
@@ -214,10 +230,17 @@
               "distance": 15.186635963668058
             }
           ],
-          "url": "https://www.openstreetmap.org/node/10233587977"
+          "url": "https://www.openstreetmap.org/node/10233587977",
+          "correctedMergedDistance": 9.091297135004186
         }
       ],
-      "responseSha256": "e83a9fb5e04bcdbd1c9e63fabb438d1aad36d8d5c9f0c9081f68ca1e0dbdd25b"
+      "responseSha256": "e83a9fb5e04bcdbd1c9e63fabb438d1aad36d8d5c9f0c9081f68ca1e0dbdd25b",
+      "correctedMergedCoord": [
+        121.45593638794666,
+        25.176956230035763
+      ]
     }
-  ]
+  ],
+  "originalMergedDistancesVersion": "d868087",
+  "correctedAlgorithmSha256": "723c6af93261bdaadb199bfe6186e17a2fdbd583f47cab4e52e135d21b8ec6e9"
 }

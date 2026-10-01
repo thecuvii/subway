@@ -37,8 +37,7 @@ function pathPosition(point, points) {
   return { distance, alongMeters }
 }
 
-const aliases = load('constants/transfer-stations.ts')
-const { unifyTransferStations, stationDistance } = load('utils/transfer-stations.ts', { '~/constants/transfer-stations': aliases })
+const { unifyTransferStations, stationDistance, getStationTrackDirection, trackAngleDegrees } = load('utils/transfer-stations.ts')
 const dataText = fs.readFileSync(path.join(root, 'datasource/data.json'), 'utf8')
 const dataset = JSON.parse(dataText).map(city => ({
   id: city.id,
@@ -74,6 +73,7 @@ for (const city of dataset) {
         name: station.name,
         stationId: station.id,
         originalCoord: station.originalCoord,
+        approachDirection: getStationTrackDirection(station.originalCoord, line.polyline),
         movementMeters: stationDistance(station.originalCoord, station.coord),
         originalPathDistanceMeters: sourcePosition.distance,
         mergedPathDistanceMeters: mergedPosition.distance,
@@ -91,12 +91,27 @@ const results = [...groups.values()].map((group) => {
   }
   const maxMovement = Math.max(...group.members.map(member => member.movementMeters))
   const maxPathDistance = Math.max(...group.members.map(member => member.mergedPathDistanceMeters))
+  const spacingLimitExceeded = maxMovement > diameter * 3 + 0.01
+  const movementLimitExceeded = maxMovement > 200
+  const approachAngles = []
+  const tracks = [...new Map(group.members.map(member => [member.lineId, member])).values()]
+  for (let first = 0; first < tracks.length; first++) {
+    for (let second = first + 1; second < tracks.length; second++)
+      approachAngles.push({ firstLine: tracks[first].line, secondLine: tracks[second].line, angleDegrees: trackAngleDegrees(tracks[first].approachDirection, tracks[second].approachDirection) })
+  }
   return {
     ...group,
     diameterMeters: diameter,
     maxMovementMeters: maxMovement,
     maxPathDistanceMeters: maxPathDistance,
     maxAlongPathMovementMeters: Math.max(...group.members.map(member => member.alongPathMovementMeters)),
+    approachAngles,
+    acceptance: {
+      passed: !spacingLimitExceeded && !movementLimitExceeded,
+      movementLimitExceeded,
+      spacingLimitExceeded,
+      movementToOriginalSpacingRatio: diameter ? maxMovement / diameter : 0,
+    },
     flags: [...(maxMovement > 250 ? ['movement-over-250m'] : []), ...(maxPathDistance > 100 ? ['off-path-over-100m'] : []), ...((group.method === 'intersection' && diameter < 50 && maxMovement > 100) ? ['intersection-moves-already-close-stops'] : [])],
   }
 }).sort((first, second) => second.maxMovementMeters - first.maxMovementMeters)
@@ -104,15 +119,25 @@ const thresholds = [50, 100, 250, 500, 750, 1000]
 const report = {
   auditedAt: new Date().toISOString(),
   dataSha256: crypto.createHash('sha256').update(dataText).digest('hex'),
-  algorithmSha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(root, 'utils/transfer-stations.ts'))).digest('hex'),
+  algorithmSha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(root, 'utils/transfer-stations.ts'), 'utf8').replace(/\r\n/g, '\n')).digest('hex'),
+  algorithmHashNormalization: 'LF',
   coordinateSystem: 'WGS84',
   normalization,
+  acceptanceCriteria: { maximumMovementMeters: 200, maximumOriginalSpacingMultiple: 3, spacingDefinition: 'maximum pairwise original station distance in a group', ratioComparisonToleranceMeters: 0.01 },
   summary: {
     movementCounts: Object.fromEntries(thresholds.map(threshold => [`over${threshold}Meters`, results.filter(group => group.maxMovementMeters > threshold).length])),
     pathDistanceCounts: Object.fromEntries(thresholds.map(threshold => [`over${threshold}Meters`, results.filter(group => group.maxPathDistanceMeters > threshold).length])),
     maxMovementMeters: results[0].maxMovementMeters,
     maxPathDistanceMeters: Math.max(...results.map(group => group.maxPathDistanceMeters)),
     closeStopsMovedByIntersection: results.filter(group => group.flags.includes('intersection-moves-already-close-stops')).length,
+    acceptance: {
+      passedGroups: results.filter(group => group.acceptance.passed).length,
+      failedGroups: results.filter(group => !group.acceptance.passed).length,
+      movementOver200Meters: results.filter(group => group.acceptance.movementLimitExceeded).length,
+      movementOverThreeTimesOriginalSpacing: results.filter(group => group.acceptance.spacingLimitExceeded).length,
+      failedIntersections: results.filter(group => !group.acceptance.passed && group.method === 'intersection').length,
+      failedCenters: results.filter(group => !group.acceptance.passed && group.method === 'center').length,
+    },
   },
   groups: results,
 }

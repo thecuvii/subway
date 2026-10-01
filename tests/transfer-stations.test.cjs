@@ -14,8 +14,7 @@ function load(file, dependencies = {}) {
   return exports
 }
 
-const aliases = load('constants/transfer-stations.ts')
-const { unifyTransferStations, stationDistance } = load('utils/transfer-stations.ts', { '~/constants/transfer-stations': aliases })
+const { unifyTransferStations, stationDistance, trackAngleDegrees, getStationTrackDirection } = load('utils/transfer-stations.ts')
 const coord = (x, y = 0) => [120 + x / 100000, 30 + y / 100000]
 const line = (id, point, polyline, name = '换乘站') => ({ id, cityId: 'city', stations: [{ id: `station-${id}`, name, coord: point }], polyline })
 const dataset = lines => [{ id: 'city', lines }]
@@ -46,7 +45,7 @@ test('parallel paths use a midpoint and ignore distant intersections', () => {
 
 test('multiple nearby crossings choose the one closest to the station group', () => {
   const first = line('a', coord(0), [coord(-1000), coord(1000)])
-  const second = line('b', coord(0, 50), [coord(0, -50), coord(0, 50), coord(100, 50), coord(100, -50)])
+  const second = line('b', coord(0, 20), [coord(0, -100), coord(0, 100), coord(100, 100), coord(100, -100)])
   unifyTransferStations(dataset([first, second]))
   assert.ok(stationDistance(first.stations[0].coord, coord(0)) < 0.01)
 })
@@ -93,12 +92,66 @@ test('distance chains cannot merge members more than 1 km apart and order is sta
   assert.deepEqual(plain(first.map(x => x.stations[0].coord)), plain(second.reverse().map(x => x.stations[0].coord)))
 })
 
-test('confirmed cross-city aliases merge', () => {
+test('different-name transfer aliases retain their own positions', () => {
   const first = line('a', coord(0), [], '福田口岸')
   const second = line('b', coord(200), [], '落马洲')
   const data = [{ id: '4403', lines: [first] }, { id: '8100', lines: [second] }]
-  assert.equal(unifyTransferStations(data).groups, 1)
-  assert.ok(stationDistance(first.stations[0].coord, coord(100)) < 0.01)
+  assert.equal(unifyTransferStations(data).groups, 0)
+  assert.ok(stationDistance(first.stations[0].coord, coord(0)) < 0.01)
+  assert.ok(stationDistance(second.stations[0].coord, coord(200)) < 0.01)
+})
+
+test('vertical, reversed and repeated-point paths yield stable undirected angles', () => {
+  const points = [coord(0, -200), coord(0), coord(0), coord(0, 200)]
+  const direction = getStationTrackDirection(coord(0), points)
+  const reverse = getStationTrackDirection(coord(0), [...points].reverse())
+  assert.ok(trackAngleDegrees(direction, reverse) < 0.0001)
+  assert.equal(trackAngleDegrees(direction, [100, 0]), 90)
+  assert.equal(getStationTrackDirection(coord(0), [coord(0), coord(0)]), null)
+})
+
+test('parallel station approaches ignore intersections after the track bends', () => {
+  const first = line('a', coord(0), [coord(0, -500), coord(0, 500)])
+  const second = line('b', coord(50), [coord(50, -500), coord(50, 100), coord(-50, 300)])
+  assert.equal(unifyTransferStations(dataset([first, second])).intersections, 0)
+  assert.ok(stationDistance(first.stations[0].coord, coord(25)) < 0.01)
+})
+
+test('nearly parallel local directions ignore a nearby shallow crossing', () => {
+  const slope = Math.tan(10 * Math.PI / 180)
+  const first = line('a', coord(0), [coord(-500), coord(500)])
+  const second = line('b', coord(0, 20), [coord(-500, 20 - 500 * slope), coord(500, 20 + 500 * slope)])
+  assert.equal(unifyTransferStations(dataset([first, second])).intersections, 0)
+  assert.ok(stationDistance(first.stations[0].coord, coord(0, 10)) < 0.01)
+})
+
+test('acute intersections farther than the station cluster fall back to its center', () => {
+  const slope = Math.tan(30 * Math.PI / 180)
+  const first = line('a', coord(0), [coord(-500), coord(500)])
+  const second = line('b', coord(0, 50), [coord(-500, 50 - 500 * slope), coord(500, 50 + 500 * slope)])
+  assert.equal(unifyTransferStations(dataset([first, second])).intersections, 0)
+  assert.ok(stationDistance(first.stations[0].coord, coord(0, 25)) < 0.01)
+})
+
+test('tight bends and reversals do not supply an artificial station direction', () => {
+  assert.equal(getStationTrackDirection(coord(0), [coord(-100), coord(0), coord(-100, 20)]), null)
+  assert.equal(getStationTrackDirection(coord(0), [coord(-100), coord(0), coord(0, 100)]), null)
+})
+
+test('endpoint directions and short paths use the available geometry', () => {
+  const direction = getStationTrackDirection(coord(0), [coord(0), coord(0, 20)])
+  assert.equal(trackAngleDegrees(direction, [100, 0]), 90)
+  assert.equal(getStationTrackDirection(coord(0), [coord(0)]), null)
+})
+
+test('a three-line group can use a crossing even if two member tracks are parallel', () => {
+  const lines = [
+    line('a', coord(-40), [coord(-300), coord(300)]),
+    line('b', coord(40), [coord(-300), coord(300)]),
+    line('c', coord(0, 40), [coord(0, -300), coord(0, 300)]),
+  ]
+  assert.equal(unifyTransferStations(dataset(lines)).intersections, 1)
+  assert.ok(lines.every(line => stationDistance(line.stations[0].coord, coord(0)) < 0.01))
 })
 
 test('duplicate coordinates do not give branches extra weight in the center', () => {
@@ -139,6 +192,7 @@ test('full dataset groups satisfy pairwise distance and produce consistent finit
           continue
         const group = groups.get(station.transferGroupId) || []
         for (const member of group) {
+          assert.equal(station.name, member.name)
           assert.ok(stationDistance(station.originalCoord, member.originalCoord) < 1000)
           assert.deepEqual(plain(station.coord), plain(member.coord))
         }
@@ -148,4 +202,14 @@ test('full dataset groups satisfy pairwise distance and produce consistent finit
     }
   }
   process.stdout.write(`Transfer display normalization: ${JSON.stringify(report)}\n`)
+  for (const [cityId, name, limit] of [['3100', '蓝村路', 30], ['1100', '清河站', 20], ['7101', '淡江大学', 20]]) {
+    const stations = data.find(city => city.id === cityId).lines.flatMap(line => line.stations.filter(station => station.name === name))
+    assert.ok(stations.length >= 2)
+    assert.ok(stations.every(station => station.transferPositionMethod === 'center' && stationDistance(station.coord, station.originalCoord) < limit))
+  }
+  const east = data.find(city => city.id === '3301').lines.flatMap(line => line.stations)
+  const station = east.find(station => station.name === '火车东站')
+  const square = east.find(station => station.name === '火车东站(东广场)')
+  assert.notEqual(station.transferGroupId, square.transferGroupId)
+  assert.ok(stationDistance(station.coord, square.coord) > 300)
 })

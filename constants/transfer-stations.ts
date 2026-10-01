@@ -4,6 +4,7 @@ interface TransferStationReference {
 }
 
 // 每组为一个已确认的换乘站组合，城市 ID 和站名须与 datasource/data.json 一致。
+// 仅用于换乘关系查询，不用于站点坐标合并。
 // 新组合追加一组，同一站的多个别名放在同组；匹配时仍须通过距离校验。
 export const TRANSFER_STATION_ALIAS_GROUPS: readonly (readonly TransferStationReference[])[] = [
   // Hangzhou East Railway Station: out-of-station interchange.
