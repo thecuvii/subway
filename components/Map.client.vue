@@ -8,6 +8,7 @@ import LineDetailLayer from '~/layers/line-detail.layer'
 import LineLayer from '~/layers/lines.layer'
 import StationsLayer from '~/layers/stations.layer'
 import { useInteractorStore } from '~/store/interactor.store'
+import { hasCityLineSelection } from '~/utils/subway'
 
 const mapRef = ref<InstanceType<typeof MapContainerClient> | null>(null)
 const selectorsRef = ref<HTMLDivElement>()
@@ -15,7 +16,7 @@ const layers = shallowRef<LayersList>()
 const appStore = useAppStore()
 const interactorStore = useInteractorStore()
 const { dataset, selectedCities } = storeToRefs(appStore)
-const { focusedLines, hoveringLine, lineMultiSelect } = storeToRefs(interactorStore)
+const { focusedLines, hoveringLine } = storeToRefs(interactorStore)
 const ctrlPressed = useKeyModifier('Control')
 const { setDetailCity } = appStore
 const { selectLine } = interactorStore
@@ -24,7 +25,7 @@ watchEffect(() => {
   const zoom = mapRef.value?.getZoom() || 0
   const selectFromMap = (line: Line, event: { srcEvent?: Event }) => {
     const additive = (event.srcEvent as MouseEvent | undefined)?.ctrlKey || false
-    selectLine(line, additive || interactorStore.isLineSelected(line))
+    selectLine(line, additive)
     zoomToLines()
   }
   const selectedLineLayers = focusedLines.value.map(line => new LineDetailLayer({
@@ -36,7 +37,7 @@ watchEffect(() => {
       selectFromMap(line, event)
     },
   }))
-  const hoveringLineLayer = hoveringLine.value
+  const hoveringLineLayer = (hoveringLine.value && !interactorStore.isLineSelected(hoveringLine.value))
     ? new LineDetailLayer({
       id: `hovering-${hoveringLine.value.id}`,
       data: hoveringLine.value,
@@ -53,7 +54,7 @@ watchEffect(() => {
     new LineLayer({
       id: line.id,
       data: line,
-      visible: (!focusedLines.value.length || lineMultiSelect.value || !!ctrlPressed.value) && !interactorStore.isLineSelected(line),
+      visible: (!hasCityLineSelection(focusedLines.value, city.id) || !!ctrlPressed.value) && !interactorStore.isLineSelected(line),
       onClick(_info: PickingInfo, event: { srcEvent?: Event }) {
         selectFromMap(line, event)
       },
@@ -61,7 +62,7 @@ watchEffect(() => {
     new StationsLayer({
       id: `${line.id}-stations`,
       data: line,
-      visible: (!focusedLines.value.length || lineMultiSelect.value || !!ctrlPressed.value) && !interactorStore.isLineSelected(line) && zoom >= 10,
+      visible: (!hasCityLineSelection(focusedLines.value, city.id) || !!ctrlPressed.value) && !interactorStore.isLineSelected(line) && zoom >= 10,
       onClick(_info: PickingInfo, event: { srcEvent?: Event }) {
         selectFromMap(line, event)
       },

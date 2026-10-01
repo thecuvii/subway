@@ -16,14 +16,13 @@ export const useInteractorStore = defineStore('interactor', () => {
   }
 
   function selectLine(line: Line, additive = false) {
-    if (lineMultiSelect.value || additive) {
-      focusedLines.value = isLineSelected(line)
-        ? focusedLines.value.filter(item => item.id !== line.id)
-        : [...focusedLines.value, line]
-    }
-    else {
+    if (isLineSelected(line))
+      focusedLines.value = focusedLines.value.filter(item => item.id !== line.id)
+    else if (lineMultiSelect.value || additive)
+      focusedLines.value = [...focusedLines.value, line]
+    else
       focusedLines.value = [line]
-    }
+
     clearHover()
   }
 
@@ -35,9 +34,14 @@ export const useInteractorStore = defineStore('interactor', () => {
 
   function selectAllLines(lines: Line[]) {
     lineMultiSelect.value = true
+    const allSelected = areAllLinesSelected(lines)
     const cityIds = new Set(lines.map(line => line.cityId))
-    focusedLines.value = [...focusedLines.value.filter(line => !cityIds.has(line.cityId)), ...lines]
+    focusedLines.value = [...focusedLines.value.filter(line => !cityIds.has(line.cityId)), ...(allSelected ? [] : lines)]
     clearHover()
+  }
+
+  function areAllLinesSelected(lines: Line[]) {
+    return lines.length > 0 && lines.every(isLineSelected)
   }
 
   function retainCities(cityIds: Set<string>) {
@@ -46,7 +50,7 @@ export const useInteractorStore = defineStore('interactor', () => {
   }
 
   function setHoveringLine(line: Line | null) {
-    hoveringLine.value = (line && !isLineSelected(line)) ? line : null
+    hoveringLine.value = line
   }
 
   function setHoveringStation(station: Station | null, line: Line | null) {
@@ -75,6 +79,7 @@ export const useInteractorStore = defineStore('interactor', () => {
     selectLine,
     toggleLineMultiSelect,
     selectAllLines,
+    areAllLinesSelected,
     retainCities,
     setHoveringLine,
     setHoveringStation,

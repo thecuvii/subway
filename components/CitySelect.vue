@@ -6,7 +6,7 @@ import { useAppStore } from '~/store/app.store'
 const emits = defineEmits<{ (e: 'selection-change'): void }>()
 const store = useAppStore()
 const { isCitySelected, selectCity, setDetailCity, toggleCityMultiSelect, selectAllCities } = store
-const { dataset, cityMultiSelect } = storeToRefs(store)
+const { dataset, cityMultiSelect, allCitiesSelected } = storeToRefs(store)
 </script>
 
 <template>
@@ -20,7 +20,7 @@ const { dataset, cityMultiSelect } = storeToRefs(store)
         多选
       </button>
       <button class="rounded px-2 py-1 hover:bg-zinc-100" @click="() => { selectAllCities(); emits('selection-change') }">
-        全选
+        {{ allCitiesSelected ? '取消全选' : '全选' }}
       </button>
     </div>
     <section class="grow overflow-scroll scrollbar-none">

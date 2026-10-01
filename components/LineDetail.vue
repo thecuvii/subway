@@ -2,10 +2,13 @@
 import { storeToRefs } from 'pinia'
 import { Motion, Presence } from '@oku-ui/motion'
 import { useInteractorStore } from '~/store/interactor.store'
+import { useAppStore } from '~/store/app.store'
+import { getLineLabel } from '~/utils/subway'
 import type { Station } from '~/types'
 
 const emits = defineEmits<{ (e: 'station-click', station: Station): void }>()
 const { focusedLines } = storeToRefs(useInteractorStore())
+const { dataset } = storeToRefs(useAppStore())
 const displayedLineId = ref('')
 const displayedLine = computed(() => focusedLines.value.find(line => line.id === displayedLineId.value))
 
@@ -24,11 +27,11 @@ watch(focusedLines, (lines) => {
     >
       <select v-if="focusedLines.length > 1" v-model="displayedLineId" aria-label="线路" class="mx-2 max-w-[200px] text-xs text-zinc-700 rounded border border-zinc-200 p-1">
         <option v-for="line in focusedLines" :key="line.id" :value="line.id">
-          {{ line.name }}
+          {{ getLineLabel(dataset, line) }}
         </option>
       </select>
       <h3 v-else class="text-center text-xs text-zinc-700">
-        {{ displayedLine.name }}
+        {{ getLineLabel(dataset, displayedLine) }}
       </h3>
       <div class="max-h-[80vh] overflow-y-scroll scrollbar-none">
         <ul class="mt-3 text-xs text-stone-500 my-2 px-1">

@@ -13,8 +13,9 @@ const emits = defineEmits<{
 const store = useAppStore()
 const { detailCity } = storeToRefs(store)
 const interactorStore = useInteractorStore()
-const { selectLine, setHoveringLine, isLineSelected, toggleLineMultiSelect, selectAllLines } = interactorStore
+const { selectLine, setHoveringLine, isLineSelected, toggleLineMultiSelect, selectAllLines, areAllLinesSelected } = interactorStore
 const { lineMultiSelect } = storeToRefs(interactorStore)
+const allLinesSelected = computed(() => !!detailCity.value && areAllLinesSelected(detailCity.value.lines))
 
 function selectAll() {
   if (!detailCity.value?.lines.length)
@@ -42,7 +43,7 @@ function selectAll() {
           多选
         </button>
         <button class="rounded px-2 py-1 hover:bg-zinc-100" @click="selectAll">
-          全选
+          {{ allLinesSelected ? '取消全选' : '全选' }}
         </button>
       </div>
       <ul class="text-zinc-600 space-y-1 mt-2">

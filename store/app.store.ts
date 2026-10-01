@@ -10,6 +10,7 @@ export const useAppStore = defineStore('app', () => {
   const detailCity = ref<City | null>(null)
 
   const isCitySelected = (city: City) => selectedCities.value.has(city)
+  const allCitiesSelected = computed(() => dataset.value.length > 0 && dataset.value.every(isCitySelected))
 
   function syncSelection() {
     useInteractorStore().retainCities(new Set([...selectedCities.value].map(city => city.id)))
@@ -18,11 +19,11 @@ export const useAppStore = defineStore('app', () => {
   }
 
   function selectCity(city: City, additive = false) {
-    if (cityMultiSelect.value || additive) {
-      if (isCitySelected(city))
-        selectedCities.value.delete(city)
-      else
-        selectedCities.value.add(city)
+    if (isCitySelected(city)) {
+      selectedCities.value.delete(city)
+    }
+    else if (cityMultiSelect.value || additive) {
+      selectedCities.value.add(city)
     }
     else {
       selectedCities.value = new Set([city])
@@ -40,7 +41,7 @@ export const useAppStore = defineStore('app', () => {
 
   function selectAllCities() {
     cityMultiSelect.value = true
-    selectedCities.value = new Set(dataset.value)
+    selectedCities.value = allCitiesSelected.value ? new Set() : new Set(dataset.value)
     syncSelection()
   }
 
@@ -51,6 +52,7 @@ export const useAppStore = defineStore('app', () => {
     selectedCities,
     detailCity,
     cityMultiSelect,
+    allCitiesSelected,
     isCitySelected,
     selectCity,
     toggleCityMultiSelect,
