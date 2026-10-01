@@ -8,7 +8,9 @@ export interface Station {
   coord: [number, number]
   originalCoord?: [number, number]
   transferGroupId?: string
-  transferPositionMethod?: 'intersection' | 'center'
+  transferPositionMethod?: 'intersection' | 'center' | 'optimized-center'
+  transferRetainedGroupId?: string
+  transferRetainedReason?: 'original-span-over-400m' | 'no-position-within-limit'
 }
 
 export interface Line {

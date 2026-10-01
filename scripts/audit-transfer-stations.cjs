@@ -55,14 +55,16 @@ const groups = new Map()
 for (const city of dataset) {
   for (const line of city.lines) {
     for (const station of line.stations) {
-      if (!station.transferGroupId)
+      const groupId = station.transferGroupId || station.transferRetainedGroupId
+      if (!groupId)
         continue
       const sourcePosition = pathPosition(station.originalCoord, line.polyline)
       const mergedPosition = pathPosition(station.coord, line.polyline)
-      const group = groups.get(station.transferGroupId) || {
-        id: station.transferGroupId,
-        method: station.transferPositionMethod,
-        coord: station.coord,
+      const group = groups.get(groupId) || {
+        id: groupId,
+        method: station.transferPositionMethod || 'original',
+        coord: station.transferGroupId ? station.coord : null,
+        retainedReason: station.transferRetainedReason,
         members: [],
       }
       group.members.push({
@@ -73,6 +75,7 @@ for (const city of dataset) {
         name: station.name,
         stationId: station.id,
         originalCoord: station.originalCoord,
+        displayCoord: station.coord,
         approachDirection: getStationTrackDirection(station.originalCoord, line.polyline),
         movementMeters: stationDistance(station.originalCoord, station.coord),
         originalPathDistanceMeters: sourcePosition.distance,
@@ -116,6 +119,7 @@ const results = [...groups.values()].map((group) => {
   }
 }).sort((first, second) => second.maxMovementMeters - first.maxMovementMeters)
 const thresholds = [50, 100, 250, 500, 750, 1000]
+const stationMovements = dataset.flatMap(city => city.lines.flatMap(line => line.stations.map(station => stationDistance(station.originalCoord, station.coord))))
 const report = {
   auditedAt: new Date().toISOString(),
   dataSha256: crypto.createHash('sha256').update(dataText).digest('hex'),
@@ -125,6 +129,9 @@ const report = {
   normalization,
   acceptanceCriteria: { maximumMovementMeters: 200, maximumOriginalSpacingMultiple: 3, spacingDefinition: 'maximum pairwise original station distance in a group', ratioComparisonToleranceMeters: 0.01 },
   summary: {
+    allStationEntries: stationMovements.length,
+    allStationMaximumMovementMeters: Math.max(...stationMovements),
+    allStationEntriesOver200Meters: stationMovements.filter(distance => distance > 200).length,
     movementCounts: Object.fromEntries(thresholds.map(threshold => [`over${threshold}Meters`, results.filter(group => group.maxMovementMeters > threshold).length])),
     pathDistanceCounts: Object.fromEntries(thresholds.map(threshold => [`over${threshold}Meters`, results.filter(group => group.maxPathDistanceMeters > threshold).length])),
     maxMovementMeters: results[0].maxMovementMeters,

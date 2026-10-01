@@ -41,7 +41,7 @@
 
 原始高德坐标仍保存在 `datasource/data.json`；应用站点的 `originalCoord` 保存原始 WGS84 坐标，`transferGroupId` 和 `transferPositionMethod` 记录分组与位置算法。轨迹保持原样。统一展示位置不等于测绘确认的站台中心。算法约束与本次结果见 [换乘站合并报告](./datasource/update-staging/transfer-stations.md)。
 
-运行 `pnpm test:transfers` 验证方向与交点选择、中心计算、不同名站区分离及距离边界。按“移动不超过原始组间距三倍且不超过 200 米”复核的剩余问题，见 [超限检查报告](./datasource/update-staging/transfer-outliers.md)。
+运行 `pnpm test:transfers` 验证方向与交点选择、中心计算、不同名站区分离及距离边界。展示位置须满足“移动不超过原始组间距三倍且不超过 200 米”；无法满足时保留原始位置。完整结果见 [超限处理与验收报告](./datasource/update-staging/transfer-outliers.md)。
 
 ## 数据更新
 

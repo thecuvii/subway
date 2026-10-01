@@ -11,6 +11,45 @@ const PATH_DISTANCE_METERS = 250
 const METERS_PER_DEGREE = Math.PI / 180 * 6371000
 export const PARALLEL_TRACK_ANGLE_DEGREES = 20
 const DIRECTION_SAMPLE_METERS = 50
+const MAXIMUM_STATION_MOVEMENT_METERS = 200
+
+function withinMovementLimit(point: Coordinate, coordinates: Coordinate[], diameter: number) {
+  return coordinates.every(coord => stationDistance(coord, point) <= MAXIMUM_STATION_MOVEMENT_METERS
+    && stationDistance(coord, point) <= diameter * 3 + 0.01)
+}
+
+function optimizedCenter(coordinates: Coordinate[], origin: Coordinate) {
+  const points = coordinates.map(point => project(point, origin))
+  const candidates: Coordinate[] = [[0, 0], ...points]
+  for (let first = 0; first < points.length; first++) {
+    for (let second = first + 1; second < points.length; second++) {
+      const a = points[first]
+      const b = points[second]
+      candidates.push([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2])
+      for (let third = second + 1; third < points.length; third++) {
+        const c = points[third]
+        const denominator = 2 * (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]))
+        if (Math.abs(denominator) < 1e-8)
+          continue
+        const aa = a[0] ** 2 + a[1] ** 2
+        const bb = b[0] ** 2 + b[1] ** 2
+        const cc = c[0] ** 2 + c[1] ** 2
+        candidates.push([(aa * (b[1] - c[1]) + bb * (c[1] - a[1]) + cc * (a[1] - b[1])) / denominator, (aa * (c[0] - b[0]) + bb * (a[0] - c[0]) + cc * (b[0] - a[0])) / denominator])
+      }
+    }
+  }
+  let best = origin
+  let bestRadius = Infinity
+  for (const point of candidates) {
+    const candidate = unproject(point, origin)
+    const radius = Math.max(...coordinates.map(coord => stationDistance(coord, candidate)))
+    if (radius < bestRadius) {
+      best = candidate
+      bestRadius = radius
+    }
+  }
+  return best
+}
 
 export function stationDistance(first: Coordinate, second: Coordinate) {
   const radians = Math.PI / 180
@@ -142,6 +181,8 @@ function findPosition(entries: StationEntry[]) {
   if (coordinates.length === 1)
     return { coord: center, method: 'center' as const }
   const diameter = Math.max(...coordinates.flatMap(first => coordinates.map(second => stationDistance(first, second))))
+  if (diameter > MAXIMUM_STATION_MOVEMENT_METERS * 2)
+    return { coord: null, reason: 'original-span-over-400m' as const }
   // Even a steep crossing can be unrelated to a tightly clustered station group.
   const intersectionRadius = Math.min(INTERSECTION_CENTER_DISTANCE_METERS, Math.max(25, diameter / 2))
   const paths = [...new Map(entries.map(entry => [entry.line.id, nearbySegments(entry, center)])).values()]
@@ -174,7 +215,14 @@ function findPosition(entries: StationEntry[]) {
       }
     }
   }
-  return { coord: best || center, method: best ? 'intersection' as const : 'center' as const }
+  if (best && withinMovementLimit(best, coordinates, diameter))
+    return { coord: best, method: 'intersection' as const }
+  if (withinMovementLimit(center, coordinates, diameter))
+    return { coord: center, method: 'center' as const, fallback: !!best }
+  const optimized = optimizedCenter(coordinates, center)
+  return withinMovementLimit(optimized, coordinates, diameter)
+    ? { coord: optimized, method: 'optimized-center' as const }
+    : { coord: null, reason: 'no-position-within-limit' as const }
 }
 
 function matches(first: StationEntry, second: StationEntry) {
@@ -189,6 +237,8 @@ export function unifyTransferStations(dataset: Dataset) {
     station.coord = [...station.originalCoord]
     delete station.transferGroupId
     delete station.transferPositionMethod
+    delete station.transferRetainedGroupId
+    delete station.transferRetainedReason
     return { key: `${city.id}:${line.id}:${station.id}:${index}`, line, station }
   }))).sort((first, second) => first.key.localeCompare(second.key))
   const buckets = new Map<string, StationEntry[]>()
@@ -202,6 +252,9 @@ export function unifyTransferStations(dataset: Dataset) {
   let groups = 0
   let intersections = 0
   let mergedEntries = 0
+  let retainedGroups = 0
+  let optimizedCenters = 0
+  let fallbackCenters = 0
   for (const seed of entries) {
     if (assigned.has(seed))
       continue
@@ -217,8 +270,17 @@ export function unifyTransferStations(dataset: Dataset) {
     }
     for (const member of group)
       assigned.add(member)
-    const { coord, method } = findPosition(group)
+    const position = findPosition(group)
     const groupId = `transfer:${seed.key}`
+    if (!position.coord) {
+      for (const { station } of group) {
+        station.transferRetainedGroupId = groupId
+        station.transferRetainedReason = position.reason
+      }
+      retainedGroups++
+      continue
+    }
+    const { coord, method } = position
     for (const { station } of group) {
       station.coord = [...coord]
       station.transferGroupId = groupId
@@ -228,6 +290,10 @@ export function unifyTransferStations(dataset: Dataset) {
     mergedEntries += group.length
     if (method === 'intersection')
       intersections++
+    if (method === 'optimized-center')
+      optimizedCenters++
+    if ('fallback' in position && position.fallback)
+      fallbackCenters++
   }
-  return { groups, intersections, centers: groups - intersections, mergedEntries }
+  return { groups, intersections, centers: groups - intersections, mergedEntries, retainedGroups, optimizedCenters, fallbackCenters }
 }

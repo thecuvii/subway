@@ -8,7 +8,7 @@
     "spacingDefinition": "maximum pairwise original station distance in a group",
     "ratioComparisonToleranceMeters": 0.01
   },
-  "status": "awaiting-user-approval-for-further-fixes",
+  "status": "resolved-after-user-approval",
   "groups": [
     {
       "id": "transfer:3302:330200021803:BV10198656:6",
@@ -88,7 +88,14 @@
         ],
         "centerMaximumMovementMeters": 200.84789629912783,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "original",
+        "coord": null,
+        "maximumMovementMeters": 0,
+        "retainedReason": "original-span-over-400m",
+        "accepted": true
       }
     },
     {
@@ -320,7 +327,14 @@
         ],
         "centerMaximumMovementMeters": 362.24825501057416,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "original",
+        "coord": null,
+        "maximumMovementMeters": 0,
+        "retainedReason": "original-span-over-400m",
+        "accepted": true
       }
     },
     {
@@ -401,7 +415,14 @@
         ],
         "centerMaximumMovementMeters": 219.70761220635868,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "original",
+        "coord": null,
+        "maximumMovementMeters": 0,
+        "retainedReason": "original-span-over-400m",
+        "accepted": true
       }
     },
     {
@@ -513,7 +534,16 @@
         ],
         "centerMaximumMovementMeters": 192.9819195905262,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          106.49499499617923,
+          29.53973787643444
+        ],
+        "maximumMovementMeters": 192.9819195905262,
+        "accepted": true
       }
     },
     {
@@ -594,7 +624,16 @@
         ],
         "centerMaximumMovementMeters": 172.02684351440152,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          120.62330738730785,
+          31.367434521857817
+        ],
+        "maximumMovementMeters": 172.02684351440152,
+        "accepted": true
       }
     },
     {
@@ -705,7 +744,16 @@
         ],
         "centerMaximumMovementMeters": 170.48201010478857,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          121.45222401570021,
+          31.250324287712345
+        ],
+        "maximumMovementMeters": 170.48201010478857,
+        "accepted": true
       }
     },
     {
@@ -787,7 +835,14 @@
         ],
         "centerMaximumMovementMeters": 319.697149049845,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "original",
+        "coord": null,
+        "maximumMovementMeters": 0,
+        "retainedReason": "original-span-over-400m",
+        "accepted": true
       }
     },
     {
@@ -868,7 +923,16 @@
         ],
         "centerMaximumMovementMeters": 188.2905741089856,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          116.32964349715692,
+          39.90704356002119
+        ],
+        "maximumMovementMeters": 188.2905741089856,
+        "accepted": true
       }
     },
     {
@@ -949,7 +1013,16 @@
         ],
         "centerMaximumMovementMeters": 177.84018674762456,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          121.41206183287083,
+          31.177753308452196
+        ],
+        "maximumMovementMeters": 177.84018674762456,
+        "accepted": true
       }
     },
     {
@@ -1060,7 +1133,16 @@
         ],
         "centerMaximumMovementMeters": 176.94299890770458,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          114.2307329261965,
+          30.50694460075741
+        ],
+        "maximumMovementMeters": 176.94299890770458,
+        "accepted": true
       }
     },
     {
@@ -1171,7 +1253,16 @@
         ],
         "centerMaximumMovementMeters": 160.95715163292317,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          114.04897013281823,
+          22.542725838735297
+        ],
+        "maximumMovementMeters": 160.957151631469,
+        "accepted": true
       }
     },
     {
@@ -1283,7 +1374,16 @@
         ],
         "centerMaximumMovementMeters": 194.056659553269,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          121.42593075244095,
+          31.15671790478261
+        ],
+        "maximumMovementMeters": 194.056659553269,
+        "accepted": true
       }
     },
     {
@@ -1365,7 +1465,14 @@
         ],
         "centerMaximumMovementMeters": 282.36246625069464,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "original",
+        "coord": null,
+        "maximumMovementMeters": 0,
+        "retainedReason": "original-span-over-400m",
+        "accepted": true
       }
     },
     {
@@ -1552,7 +1659,14 @@
         ],
         "centerMaximumMovementMeters": 275.9293361631793,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "original",
+        "coord": null,
+        "maximumMovementMeters": 0,
+        "retainedReason": "original-span-over-400m",
+        "accepted": true
       }
     },
     {
@@ -1698,7 +1812,16 @@
         ],
         "centerMaximumMovementMeters": 151.38378264104657,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          114.02221693322466,
+          22.538732733771326
+        ],
+        "maximumMovementMeters": 151.38378264104657,
+        "accepted": true
       }
     },
     {
@@ -1884,7 +2007,16 @@
         ],
         "centerMaximumMovementMeters": 180.19309541396606,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          118.79199213353213,
+          31.97227647043736
+        ],
+        "maximumMovementMeters": 180.1930954134168,
+        "accepted": true
       }
     },
     {
@@ -1996,7 +2128,14 @@
         ],
         "centerMaximumMovementMeters": 269.3810438083742,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "original",
+        "coord": null,
+        "maximumMovementMeters": 0,
+        "retainedReason": "original-span-over-400m",
+        "accepted": true
       }
     },
     {
@@ -2077,7 +2216,16 @@
         ],
         "centerMaximumMovementMeters": 145.9183587545547,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          114.13770343815187,
+          22.338312889752824
+        ],
+        "maximumMovementMeters": 145.9183587545547,
+        "accepted": true
       }
     },
     {
@@ -2189,7 +2337,14 @@
         ],
         "centerMaximumMovementMeters": 266.7016689114703,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "original",
+        "coord": null,
+        "maximumMovementMeters": 0,
+        "retainedReason": "original-span-over-400m",
+        "accepted": true
       }
     },
     {
@@ -2336,7 +2491,14 @@
         ],
         "centerMaximumMovementMeters": 266.6682749420457,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "original",
+        "coord": null,
+        "maximumMovementMeters": 0,
+        "retainedReason": "original-span-over-400m",
+        "accepted": true
       }
     },
     {
@@ -2448,7 +2610,14 @@
         ],
         "centerMaximumMovementMeters": 263.43576728802867,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "original",
+        "coord": null,
+        "maximumMovementMeters": 0,
+        "retainedReason": "original-span-over-400m",
+        "accepted": true
       }
     },
     {
@@ -2529,7 +2698,16 @@
         ],
         "centerMaximumMovementMeters": 147.22335762615077,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          104.08810291893482,
+          30.6749216356437
+        ],
+        "maximumMovementMeters": 147.22335762615077,
+        "accepted": true
       }
     },
     {
@@ -2610,7 +2788,16 @@
         ],
         "centerMaximumMovementMeters": 181.4064264463834,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          113.33707886349953,
+          23.10239414200273
+        ],
+        "maximumMovementMeters": 181.4064264463834,
+        "accepted": true
       }
     },
     {
@@ -2721,7 +2908,16 @@
         ],
         "centerMaximumMovementMeters": 149.93573959030627,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          102.72030368463606,
+          25.059370045123455
+        ],
+        "maximumMovementMeters": 149.93573959030627,
+        "accepted": true
       }
     },
     {
@@ -2800,7 +2996,16 @@
         ],
         "centerMaximumMovementMeters": 121.65622083343965,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          104.03642405045983,
+          30.623839237934785
+        ],
+        "maximumMovementMeters": 121.65622083343965,
+        "accepted": true
       }
     },
     {
@@ -2879,7 +3084,16 @@
         ],
         "centerMaximumMovementMeters": 132.00963462383382,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          121.52355365750333,
+          29.821445029930945
+        ],
+        "maximumMovementMeters": 132.00963462383382,
+        "accepted": true
       }
     },
     {
@@ -2958,7 +3172,16 @@
         ],
         "centerMaximumMovementMeters": 140.86674344245893,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          114.24972313501476,
+          30.714589306047237
+        ],
+        "maximumMovementMeters": 140.86674344245893,
+        "accepted": true
       }
     },
     {
@@ -3037,7 +3260,16 @@
         ],
         "centerMaximumMovementMeters": 129.10402445190738,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          116.48397154197602,
+          39.97920088766446
+        ],
+        "maximumMovementMeters": 129.10402445190738,
+        "accepted": true
       }
     },
     {
@@ -3223,7 +3455,16 @@
         ],
         "centerMaximumMovementMeters": 183.78009061568272,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          121.55320309520987,
+          31.204561148268585
+        ],
+        "maximumMovementMeters": 183.78009061568272,
+        "accepted": true
       }
     },
     {
@@ -3302,7 +3543,16 @@
         ],
         "centerMaximumMovementMeters": 131.1923207368256,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          121.5153085584395,
+          29.89067813965083
+        ],
+        "maximumMovementMeters": 131.1923207368256,
+        "accepted": true
       }
     },
     {
@@ -3413,7 +3663,16 @@
         ],
         "centerMaximumMovementMeters": 114.92940529717625,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          116.3481429753694,
+          39.93972174919554
+        ],
+        "maximumMovementMeters": 114.92940529717625,
+        "accepted": true
       }
     },
     {
@@ -3564,7 +3823,14 @@
         ],
         "centerMaximumMovementMeters": 227.4843619235023,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "original",
+        "coord": null,
+        "maximumMovementMeters": 0,
+        "retainedReason": "original-span-over-400m",
+        "accepted": true
       }
     },
     {
@@ -3643,7 +3909,16 @@
         ],
         "centerMaximumMovementMeters": 120.94914686360634,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          121.5778823655705,
+          31.17732607351131
+        ],
+        "maximumMovementMeters": 120.94914686360634,
+        "accepted": true
       }
     },
     {
@@ -3722,7 +3997,16 @@
         ],
         "centerMaximumMovementMeters": 134.01270574693348,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          117.17233525058646,
+          39.1204629470124
+        ],
+        "maximumMovementMeters": 134.01270574693348,
+        "accepted": true
       }
     },
     {
@@ -3801,7 +4085,16 @@
         ],
         "centerMaximumMovementMeters": 154.0261138149962,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          123.43027635200767,
+          41.769889002665536
+        ],
+        "maximumMovementMeters": 154.0261138149962,
+        "accepted": true
       }
     },
     {
@@ -3945,7 +4238,16 @@
         ],
         "centerMaximumMovementMeters": 167.48921887109879,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          114.06310822465686,
+          22.542515617504574
+        ],
+        "maximumMovementMeters": 167.48921887109879,
+        "accepted": true
       }
     },
     {
@@ -4056,7 +4358,14 @@
         ],
         "centerMaximumMovementMeters": 221.5655696039836,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "original",
+        "coord": null,
+        "maximumMovementMeters": 0,
+        "retainedReason": "original-span-over-400m",
+        "accepted": true
       }
     },
     {
@@ -4165,7 +4474,16 @@
         ],
         "centerMaximumMovementMeters": 110.88955354366304,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          121.4122487339279,
+          31.220055183998042
+        ],
+        "maximumMovementMeters": 110.88955354366304,
+        "accepted": true
       }
     },
     {
@@ -4276,7 +4594,14 @@
         ],
         "centerMaximumMovementMeters": 213.9577424415335,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "original",
+        "coord": null,
+        "maximumMovementMeters": 0,
+        "retainedReason": "original-span-over-400m",
+        "accepted": true
       }
     },
     {
@@ -4355,7 +4680,16 @@
         ],
         "centerMaximumMovementMeters": 118.88470361149197,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          118.82910408624915,
+          32.122589501010914
+        ],
+        "maximumMovementMeters": 118.88470361149197,
+        "accepted": true
       }
     },
     {
@@ -4464,7 +4798,16 @@
         ],
         "centerMaximumMovementMeters": 132.44904947142317,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          104.06277144977152,
+          30.646070595975218
+        ],
+        "maximumMovementMeters": 132.44904947142317,
+        "accepted": true
       }
     },
     {
@@ -4575,7 +4918,14 @@
         ],
         "centerMaximumMovementMeters": 209.47876283892867,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "original",
+        "coord": null,
+        "maximumMovementMeters": 0,
+        "retainedReason": "original-span-over-400m",
+        "accepted": true
       }
     },
     {
@@ -4686,7 +5036,16 @@
         ],
         "centerMaximumMovementMeters": 103.96724054832579,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          113.8236219775088,
+          22.77491114844129
+        ],
+        "maximumMovementMeters": 103.96724054832579,
+        "accepted": true
       }
     },
     {
@@ -4795,7 +5154,16 @@
         ],
         "centerMaximumMovementMeters": 135.0055645611702,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          114.34372512809946,
+          30.517146752574128
+        ],
+        "maximumMovementMeters": 135.0055645611702,
+        "accepted": true
       }
     },
     {
@@ -4906,7 +5274,16 @@
         ],
         "centerMaximumMovementMeters": 204.15731448880192,
         "centerMeetsAcceptance": false,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "optimized-center",
+        "coord": [
+          117.15882375209284,
+          39.155231472203745
+        ],
+        "maximumMovementMeters": 153.15926965389735,
+        "accepted": true
       }
     },
     {
@@ -4985,7 +5362,16 @@
         ],
         "centerMaximumMovementMeters": 108.80799121434946,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          114.21747639650178,
+          30.639480541548558
+        ],
+        "maximumMovementMeters": 108.80799121434946,
+        "accepted": true
       }
     },
     {
@@ -5064,8 +5450,28 @@
         ],
         "centerMaximumMovementMeters": 101.4896829514531,
         "centerMeetsAcceptance": true,
-        "changeApplied": false
+        "changeApplied": true
+      },
+      "resolution": {
+        "method": "center",
+        "coord": [
+          116.38910250921958,
+          39.96722098331049
+        ],
+        "maximumMovementMeters": 101.4896829514531,
+        "accepted": true
       }
     }
-  ]
+  ],
+  "reviewedAlgorithmSha256": "723c6af93261bdaadb199bfe6186e17a2fdbd583f47cab4e52e135d21b8ec6e9",
+  "appliedAlgorithmSha256": "3df909a50b3776822ae1393b7d5676cdc3791b365ec6757f1c9487e6576eedae",
+  "resolvedAt": "2026-10-01T11:37:32.277Z",
+  "finalAcceptance": {
+    "passedGroups": 1322,
+    "failedGroups": 0,
+    "movementOver200Meters": 0,
+    "movementOverThreeTimesOriginalSpacing": 0,
+    "failedIntersections": 0,
+    "failedCenters": 0
+  }
 }

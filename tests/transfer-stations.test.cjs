@@ -71,7 +71,8 @@ test('the 1 km limit accepts 999 meters and rejects 1001 meters', () => {
   const atMeters = meters => [120, 30 + meters / (Math.PI / 180 * 6371000)]
   for (const [meters, expected] of [[999, 1], [1001, 0]]) {
     const data = dataset([line('a', atMeters(0), []), line('b', atMeters(meters), [])])
-    assert.equal(unifyTransferStations(data).groups, expected)
+    const result = unifyTransferStations(data)
+    assert.equal(result.groups + result.retainedGroups, expected)
   }
 })
 
@@ -87,8 +88,9 @@ test('distance chains cannot merge members more than 1 km apart and order is sta
   const second = makeLines().reverse()
   unifyTransferStations(dataset(first))
   unifyTransferStations(dataset(second))
-  assert.equal(first[0].stations[0].transferGroupId, first[1].stations[0].transferGroupId)
-  assert.equal(first[2].stations[0].transferGroupId, undefined)
+  assert.ok(first[0].stations[0].transferRetainedGroupId)
+  assert.equal(first[0].stations[0].transferRetainedGroupId, first[1].stations[0].transferRetainedGroupId)
+  assert.equal(first[2].stations[0].transferRetainedGroupId, undefined)
   assert.deepEqual(plain(first.map(x => x.stations[0].coord)), plain(second.reverse().map(x => x.stations[0].coord)))
 })
 
@@ -168,6 +170,34 @@ test('normalizing twice retains source positions and yields the same display coo
   assert.equal(JSON.stringify(data), first)
 })
 
+test('an intersection moving a member over 200 meters falls back to a valid center', () => {
+  const lines = [line('a', coord(-250), [coord(-500), coord(500)]), line('b', coord(0, 100), [coord(0, -500), coord(0, 500)])]
+  assert.equal(unifyTransferStations(dataset(lines)).fallbackCenters, 1)
+  assert.ok(lines.every(line => line.stations[0].transferPositionMethod === 'center' && stationDistance(line.stations[0].coord, line.stations[0].originalCoord) <= 200))
+})
+
+test('groups wider than 400 meters retain every original position and remain repeatable', () => {
+  const data = dataset([line('a', coord(0), []), line('b', coord(500), [])])
+  assert.equal(unifyTransferStations(data).retainedGroups, 1)
+  const snapshot = JSON.stringify(data)
+  unifyTransferStations(data)
+  assert.equal(JSON.stringify(data), snapshot)
+  assert.ok(data[0].lines.every(line => line.stations[0].transferRetainedReason === 'original-span-over-400m'))
+})
+
+test('an uneven three-position mean is replaced by a center minimizing maximum movement', () => {
+  const data = dataset([line('a', coord(0), []), line('b', coord(10), []), line('c', coord(350), [])])
+  assert.equal(unifyTransferStations(data).optimizedCenters, 1)
+  assert.ok(data[0].lines.every(line => stationDistance(line.stations[0].coord, line.stations[0].originalCoord) <= 200))
+  assert.ok(stationDistance(data[0].lines[0].stations[0].coord, coord(175)) < 0.01)
+})
+
+test('an acute multi-position group can use a circle supported by three positions', () => {
+  const data = dataset([line('a', coord(0), []), line('b', coord(320), []), line('c', coord(160, 277), []), line('d', coord(10), [])])
+  assert.equal(unifyTransferStations(data).optimizedCenters, 1)
+  assert.ok(data[0].lines.every(line => stationDistance(line.stations[0].coord, line.stations[0].originalCoord) <= 200))
+})
+
 test('full dataset groups satisfy pairwise distance and produce consistent finite display coordinates', () => {
   const raw = JSON.parse(fs.readFileSync(path.join(__dirname, '../datasource/data.json'), 'utf8'))
   const data = raw.map(city => ({
@@ -187,7 +217,7 @@ test('full dataset groups satisfy pairwise distance and produce consistent finit
     for (const item of city.lines) {
       for (const station of item.stations) {
         assert.ok(station.coord.every(Number.isFinite))
-        assert.ok(stationDistance(station.coord, station.originalCoord) < 1000)
+        assert.ok(stationDistance(station.coord, station.originalCoord) <= 200)
         if (!station.transferGroupId)
           continue
         const group = groups.get(station.transferGroupId) || []
@@ -202,6 +232,25 @@ test('full dataset groups satisfy pairwise distance and produce consistent finit
     }
   }
   process.stdout.write(`Transfer display normalization: ${JSON.stringify(report)}\n`)
+  assert.equal(report.retainedGroups, 14)
+  assert.equal(report.fallbackCenters, 32)
+  assert.equal(report.optimizedCenters, 1)
+  for (const stations of groups.values()) {
+    const diameter = Math.max(...stations.flatMap(first => stations.map(second => stationDistance(first.originalCoord, second.originalCoord))))
+    assert.ok(stations.every(station => stationDistance(station.coord, station.originalCoord) <= diameter * 3 + 0.01))
+  }
+  const west = data.find(city => city.id === '1200').lines.flatMap(line => line.stations.filter(station => station.name === '西站'))
+  assert.ok(west.every(station => station.transferPositionMethod === 'optimized-center'))
+  for (const city of data) {
+    for (const item of city.lines) {
+      for (const station of item.stations) {
+        if (station.transferRetainedGroupId) {
+          assert.deepEqual(plain(station.coord), plain(station.originalCoord))
+          assert.equal(station.transferGroupId, undefined)
+        }
+      }
+    }
+  }
   for (const [cityId, name, limit] of [['3100', '蓝村路', 30], ['1100', '清河站', 20], ['7101', '淡江大学', 20]]) {
     const stations = data.find(city => city.id === cityId).lines.flatMap(line => line.stations.filter(station => station.name === name))
     assert.ok(stations.length >= 2)
