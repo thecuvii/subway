@@ -1,0 +1,223 @@
+{
+  "auditedAt": "2026-10-01T10:52:02.794Z",
+  "coordinateSystem": "WGS84",
+  "source": "OpenStreetMap API /api/0.6/map",
+  "cases": [
+    {
+      "name": "蓝村路",
+      "nodes": [
+        {
+          "id": "5017605278",
+          "coord": [
+            121.5242679,
+            31.2144768
+          ],
+          "routes": [],
+          "mergedDistance": 355.2640780434282,
+          "originalDistances": [
+            {
+              "line": "4号线",
+              "distance": 113.52649432583938
+            },
+            {
+              "line": "6号线",
+              "distance": 122.72949263110773
+            }
+          ],
+          "url": "https://www.openstreetmap.org/node/5017605278"
+        },
+        {
+          "id": "5017605281",
+          "coord": [
+            121.5237086,
+            31.2141345
+          ],
+          "routes": [
+            {
+              "id": "6921384",
+              "ref": "6",
+              "name": "6号线：东方体育中心 -&gt; 港城路"
+            }
+          ],
+          "mergedDistance": 294.97339046044203,
+          "originalDistances": [
+            {
+              "line": "4号线",
+              "distance": 54.91296584008407
+            },
+            {
+              "line": "6号线",
+              "distance": 57.7433482960408
+            }
+          ],
+          "url": "https://www.openstreetmap.org/node/5017605281"
+        },
+        {
+          "id": "5017605282",
+          "coord": [
+            121.5236517,
+            31.2141536
+          ],
+          "routes": [
+            {
+              "id": "6921384",
+              "ref": "6",
+              "name": "6号线：港城路 -&gt; 东方体育中心"
+            }
+          ],
+          "mergedDistance": 294.23813164019776,
+          "originalDistances": [
+            {
+              "line": "4号线",
+              "distance": 55.80634428250725
+            },
+            {
+              "line": "6号线",
+              "distance": 55.679315566220815
+            }
+          ],
+          "url": "https://www.openstreetmap.org/node/5017605282"
+        }
+      ],
+      "responseSha256": "039fca7c72a1a02996985240276c9e80d26c471fa00e611488cf9d0fae6c0c59"
+    },
+    {
+      "name": "清河站",
+      "nodes": [
+        {
+          "id": "6941409382",
+          "coord": [
+            116.3063149,
+            40.0435687
+          ],
+          "routes": [],
+          "mergedDistance": 254.2388425458717,
+          "originalDistances": [
+            {
+              "line": "13号线",
+              "distance": 464.344766641642
+            },
+            {
+              "line": "昌平线",
+              "distance": 463.31096462532906
+            }
+          ],
+          "url": "https://www.openstreetmap.org/node/6941409382"
+        },
+        {
+          "id": "6941598123",
+          "coord": [
+            116.3087317,
+            40.0398118
+          ],
+          "routes": [
+            {
+              "id": "10216874",
+              "ref": "13",
+              "name": "地铁 13号线: 西直门 -&gt; 东直门"
+            }
+          ],
+          "mergedDistance": 213.479052701043,
+          "originalDistances": [
+            {
+              "line": "13号线",
+              "distance": 3.6127370118729276
+            },
+            {
+              "line": "昌平线",
+              "distance": 13.007963050811107
+            }
+          ],
+          "url": "https://www.openstreetmap.org/node/6941598123"
+        },
+        {
+          "id": "6941850418",
+          "coord": [
+            116.3101007,
+            40.0383949
+          ],
+          "routes": [],
+          "mergedDistance": 409.14975179570143,
+          "originalDistances": [
+            {
+              "line": "13号线",
+              "distance": 197.90439254801277
+            },
+            {
+              "line": "昌平线",
+              "distance": 196.61495397053628
+            }
+          ],
+          "url": "https://www.openstreetmap.org/node/6941850418"
+        },
+        {
+          "id": "8628640150",
+          "coord": [
+            116.3085398,
+            40.0432333
+          ],
+          "routes": [],
+          "mergedDistance": 221.92865955058357,
+          "originalDistances": [
+            {
+              "line": "13号线",
+              "distance": 380.95725904432175
+            },
+            {
+              "line": "昌平线",
+              "distance": 373.50179244521814
+            }
+          ],
+          "url": "https://www.openstreetmap.org/node/8628640150"
+        }
+      ],
+      "responseSha256": "691df42f9d7ee4bedf8bd9c41bd48180510c80b1887d515499a8ee0a39a7ef61"
+    },
+    {
+      "name": "淡江大学",
+      "nodes": [
+        {
+          "id": "10233587976",
+          "coord": [
+            121.4559044,
+            25.1772467
+          ],
+          "routes": [],
+          "mergedDistance": 192.21090108995588,
+          "originalDistances": [
+            {
+              "line": "新北捷运淡海轻轨红树林-崁顶",
+              "distance": 43.32365172791349
+            },
+            {
+              "line": "新北捷运淡海轻轨红树林-淡水人鱼码头",
+              "distance": 21.59679202468438
+            }
+          ],
+          "url": "https://www.openstreetmap.org/node/10233587976"
+        },
+        {
+          "id": "10233587977",
+          "coord": [
+            121.4560267,
+            25.1769541
+          ],
+          "routes": [],
+          "mergedDistance": 226.33702923149477,
+          "originalDistances": [
+            {
+              "line": "新北捷运淡海轻轨红树林-崁顶",
+              "distance": 13.072212677904444
+            },
+            {
+              "line": "新北捷运淡海轻轨红树林-淡水人鱼码头",
+              "distance": 15.186635963668058
+            }
+          ],
+          "url": "https://www.openstreetmap.org/node/10233587977"
+        }
+      ],
+      "responseSha256": "e83a9fb5e04bcdbd1c9e63fabb438d1aad36d8d5c9f0c9081f68ca1e0dbdd25b"
+    }
+  ]
+}
