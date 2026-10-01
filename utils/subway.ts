@@ -1,4 +1,5 @@
 import type { Dataset, Line, Station } from '~/types'
+import { TRANSFER_STATION_ALIAS_GROUPS } from '~/constants/transfer-stations'
 
 export const TRANSFER_DISTANCE_METERS = 1000
 
@@ -17,8 +18,12 @@ export function getLineLabel(dataset: Dataset, line: Line) {
 }
 
 export function getStationLines(dataset: Dataset, line: Line, station: Station) {
+  const aliasGroup = TRANSFER_STATION_ALIAS_GROUPS.find(group =>
+    group.some(alias => alias.cityId === line.cityId && alias.name === station.name),
+  )
   const lines = dataset.flatMap(city => city.lines.filter(candidate => candidate.stations.some(item =>
-    item.name === station.name && getStationDistanceMeters(item, station) < TRANSFER_DISTANCE_METERS,
+    (item.name === station.name || aliasGroup?.some(alias => alias.cityId === candidate.cityId && alias.name === item.name))
+    && getStationDistanceMeters(item, station) < TRANSFER_DISTANCE_METERS,
   )))
   const uniqueLines = [...new Map(lines.map(candidate => [`${candidate.cityId}:${candidate.name}`, candidate])).values()]
   return uniqueLines.length ? uniqueLines : [line]

@@ -34,7 +34,8 @@ function setup() {
   const load = file => fs.readFileSync(path.join(root, file), 'utf8').replace(/if \(import\.meta\.hot\)[\s\S]*$/, '')
   const interactorModule = evaluate(load('store/interactor.store.ts'))
   const appModule = evaluate(load('store/app.store.ts'), { './interactor.store': interactorModule })
-  const subwayModule = evaluate(load('utils/subway.ts'))
+  const aliasesModule = evaluate(load('constants/transfer-stations.ts'))
+  const subwayModule = evaluate(load('utils/subway.ts'), { '~/constants/transfer-stations': aliasesModule })
   return { app: appModule.useAppStore(), interaction: interactorModule.useInteractorStore(), interactorModule, appModule, subwayModule }
 }
 
@@ -232,6 +233,53 @@ test('不会通过删除括号后缀把上海浦电路两座独立站合并', ()
   const line = dataset.find(city => city.name === '上海').lines.find(line => line.name === '4号线')
   const station = line.stations.find(station => station.name === '浦电路(4号线)')
   assert.deepEqual(Array.from(subwayModule.getStationLines(dataset, line, station), line => line.name), ['4号线'])
+})
+
+const aliasCases = [
+  {
+    name: '杭州火车东站与东广场双向换乘',
+    stations: [{ city: '杭州', name: '火车东站' }, { city: '杭州', name: '火车东站(东广场)' }],
+    expected: ['杭州 · 1号线', '杭州 · 4号线', '杭州 · 6号线', '杭州 · 19号线'],
+  },
+  {
+    name: '福田口岸与落马洲双向跨境换乘',
+    stations: [{ city: '深圳', name: '福田口岸' }, { city: '香港', name: '落马洲' }],
+    expected: ['深圳 · 4号线/龙华线', '深圳 · 10号线/坂田线', '香港 · 东铁线'],
+  },
+  {
+    name: '香港站与中环站双向换乘',
+    stations: [{ city: '香港', name: '香港' }, { city: '香港', name: '中环' }],
+    expected: ['香港 · 东涌线', '香港 · 港岛线', '香港 · 机场快线', '香港 · 荃湾线'],
+  },
+  {
+    name: '尖东站与尖沙咀站双向换乘',
+    stations: [{ city: '香港', name: '尖东' }, { city: '香港', name: '尖沙咀' }],
+    expected: ['香港 · 屯马线', '香港 · 荃湾线'],
+  },
+]
+
+for (const item of aliasCases) {
+  test(`真实数据${item.name}`, () => {
+    const { subwayModule } = setup()
+    const dataset = getRealDataset()
+    for (const reference of item.stations) {
+      const city = dataset.find(city => city.name === reference.city)
+      const line = city.lines.find(line => line.stations.some(station => station.name === reference.name))
+      const station = line.stations.find(station => station.name === reference.name)
+      const labels = Array.from(subwayModule.getStationLines(dataset, line, station), line => subwayModule.getLineLabel(dataset, line))
+      assert.deepEqual(labels.sort(), [...item.expected].sort())
+    }
+  })
+}
+
+test('指定别名仍受距离和城市限制，不能跨区域误合并', () => {
+  const { subwayModule } = setup()
+  const station = { id: 'hongkong', name: '香港', coord: [114, 22] }
+  const line = { id: 'source', cityId: '8100', name: '东涌线', stations: [station] }
+  const far = { id: 'far', cityId: '8100', name: '港岛线', stations: [{ ...station, name: '中环', coord: [114, 22.02] }] }
+  const wrongCity = { id: 'wrong-city', cityId: '4501', name: '测试线', stations: [{ ...station, name: '中环' }] }
+  const dataset = [{ id: '8100', lines: [line, far] }, { id: '4501', lines: [wrongCity] }]
+  assert.deepEqual(Array.from(subwayModule.getStationLines(dataset, line, station), line => line.id), ['source'])
 })
 
 test('距离阈值按米计算，同名近站可换乘，远站或异名近站不可换乘', () => {
