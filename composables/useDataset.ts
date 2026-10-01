@@ -3,33 +3,41 @@ import hexRgb from 'hex-rgb'
 import first from 'lodash-es/first'
 import rawData from '~/datasource/data.json'
 import type { Bound, Dataset, Line, Station } from '~/types'
+import { unifyTransferStations } from '~/utils/transfer-stations'
 
 export function useDataset() {
-  return ref<Dataset>(
-    rawData.map((city) => {
-      const lines = city.lines.map((line) => {
-        const stations = line.stations.map(station => ({ id: station.id, name: station.name, coord: transformGCJ02([station.lng, station.lat]) }))
-        const polyline = partialPolyline((line.fullPolyline.length ? line.fullPolyline.map(p => transformGCJ02(p as [number, number])) : extractPolyline(line.polyline)) as [number, number][], 3)
-        return {
-          id: line.id,
-          cityId: city.id,
-          name: line.name,
-          bound: getLineBounds(stations),
-          // FIXME alpha通道数值不对劲
-          color: hexRgb(line.color, { format: 'array', alpha: 10 }),
-          stations,
-          polyline,
-        }
-      })
-
+  const dataset: Dataset = rawData.map((city) => {
+    const lines = city.lines.map((line) => {
+      const stations = line.stations.map(station => ({ id: station.id, name: station.name, coord: transformGCJ02([station.lng, station.lat]) }))
+      const polyline = (line.fullPolyline.length ? line.fullPolyline.map(p => transformGCJ02(p as [number, number])) : extractPolyline(line.polyline)) as [number, number][]
       return {
-        id: city.id,
-        name: city.name,
-        bound: getCityBound(lines),
-        lines,
+        id: line.id,
+        cityId: city.id,
+        name: line.name,
+        bound: getLineBounds(stations),
+        // FIXME alpha通道数值不对劲
+        color: hexRgb(line.color, { format: 'array', alpha: 10 }),
+        stations,
+        polyline,
       }
-    }),
-  )
+    })
+
+    return {
+      id: city.id,
+      name: city.name,
+      bound: getCityBound(lines),
+      lines,
+    }
+  })
+  unifyTransferStations(dataset)
+  for (const city of dataset) {
+    for (const line of city.lines) {
+      line.bound = getLineBounds(line.stations)
+      line.polyline = partialPolyline(line.polyline, 3)
+    }
+    city.bound = getCityBound(city.lines)
+  }
+  return ref<Dataset>(dataset)
 }
 
 function getLineBounds(stations: Station[]) {

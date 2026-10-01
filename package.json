@@ -12,6 +12,7 @@
     "generate": "nuxi generate",
     "start:generate": "npx serve .output/public",
     "test:data": "node --test tests/data-update.test.mjs",
+    "test:transfers": "node --test tests/transfer-stations.test.cjs",
     "data:lines": "node scripts/fetch-subway.mjs",
     "data:prepare": "node scripts/prepare-subway-update.mjs",
     "data:polyline": "node scripts/fetch-subway-geometry.mjs",

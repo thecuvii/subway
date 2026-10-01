@@ -35,6 +35,14 @@
 - ⚠️ **已知缺失**: 台北淡水信义线（`900000192971`）在高德官方线路接口中返回空结果，本次暂未纳入。猫空缆车属于索道交通，已排除。
 - 🧾 **来源与校验**: 详见 [更新报告](./datasource/update-staging/README.md) 和 [数据来源记录](./datasource/metadata.json)。全部已纳入线路均取得真实经纬度轨迹，并核对运营状态及站点与轨迹的距离。
 
+### 换乘站展示位置
+
+应用加载时将同名或已配置别名、距离小于 1 km 的站点分组，组内所有站点两两满足判定。优先使用站点附近的线路交点；没有合理交点时，两位置取中点，多位置取中心。各线路保留各自的站点记录和 ID，但同组使用统一展示坐标，恢复旧版换乘站重合的效果。
+
+原始高德坐标仍保存在 `datasource/data.json`；应用站点的 `originalCoord` 保存原始 WGS84 坐标，`transferGroupId` 和 `transferPositionMethod` 记录分组与位置算法。轨迹保持原样。统一展示位置不等于测绘确认的站台中心。算法约束与本次结果见 [换乘站合并报告](./datasource/update-staging/transfer-stations.md)。
+
+运行 `pnpm test:transfers` 验证交点选择、中心计算、别名分组及距离边界。
+
 ## 数据更新
 
 准备自己的高德 **Web 服务** Key，在项目根目录 `.env.local` 中配置 `AMAP_WEB_SERVICE_KEY`。该文件及原始响应缓存不会进入 Git；Key 仅供本地采集工具使用，不写入前端配置。

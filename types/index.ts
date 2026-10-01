@@ -6,6 +6,9 @@ export interface Station {
   id: string
   name: string
   coord: [number, number]
+  originalCoord?: [number, number]
+  transferGroupId?: string
+  transferPositionMethod?: 'intersection' | 'center'
 }
 
 export interface Line {
