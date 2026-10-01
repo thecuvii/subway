@@ -7,6 +7,7 @@
     "dev:pwa": "VITE_PLUGIN_PWA=true nuxi dev",
     "start": "node .output/server/index.mjs",
     "typecheck": "vue-tsc --noEmit",
+    "test": "node --test tests/*.test.cjs",
     "lint": "eslint .",
     "postinstall": "nuxi prepare",
     "generate": "nuxi generate",

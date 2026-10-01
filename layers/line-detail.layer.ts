@@ -13,8 +13,8 @@ class LineDetailLayer extends CompositeLayer<{ id: string; data: Line; pickable?
       return []
     return [
       new PathLayer<[number, number][]>({
-        id: 'detail-polyline',
-        data: line.polyline,
+        id: `${this.props.id}-polyline`,
+        data: [line.polyline],
         getColor: line.color,
         widthScale: 15,
         widthMinPixels: 5,
@@ -22,7 +22,7 @@ class LineDetailLayer extends CompositeLayer<{ id: string; data: Line; pickable?
         pickable: this.props.pickable,
         getPath: () => line.polyline,
       }),
-      new StationsLayer({ id: 'detail-stations', data: line, size: 'lg', labels: this.props.labels }),
+      new StationsLayer({ id: `${this.props.id}-stations`, data: line, size: 'lg', labels: this.props.labels }),
     ]
   }
 }

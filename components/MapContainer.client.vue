@@ -35,7 +35,7 @@ async function onMapCreated(mapInstance: any) {
     pickingRadius: 4,
     onHover: (info) => {
       const source = info.sourceLayer?.root.props.data as Line
-      const isHoveringOnStation = info.sourceLayer?.id === 'detail-stations'
+      const isHoveringOnStation = info.object && 'coord' in info.object
       setHoveringLine(source || null)
       if (isHoveringOnStation)
         setHoveringStation(source.stations.find(station => station.id === info.object?.id) || null, source)

@@ -14,7 +14,7 @@ class LineLayer extends CompositeLayer<{ id: string; data: Line; selected?: bool
     return [
       new PathLayer<[number, number][]>({
         id: `${id}${line.id}polyline${selected && 'selected'}`,
-        data: line.polyline,
+        data: [line.polyline],
         getColor: line.color,
         autoHighlight: false,
         widthScale: 15,

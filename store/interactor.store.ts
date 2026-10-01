@@ -1,53 +1,81 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { Line, Station } from '~/types'
 
-interface Position {
-  x: number
-  y: number
-}
-
 export const useInteractorStore = defineStore('interactor', () => {
-  const focusedLine = ref<Line | null> (null)
+  const focusedLines = ref<Line[]>([])
+  const lineMultiSelect = ref(false)
   const hoveringLine = ref<Line | null>(null)
   const hoveringStation = ref<Station | null>(null)
-  const hoveringPosition = ref<Position >({ x: -1, y: -1 })
+  const hoveringPosition = ref({ x: -1, y: -1 })
 
-  const setFocusedLine = (line: Line | null) => {
-    focusedLine.value = line
+  const isLineSelected = (line: Line) => focusedLines.value.some(item => item.id === line.id)
+
+  function clearHover() {
     hoveringLine.value = null
     hoveringStation.value = null
   }
 
-  const setHoveringLine = (line: Line | null) => {
-    if (focusedLine.value)
-      return
-    hoveringLine.value = line
+  function selectLine(line: Line, additive = false) {
+    if (lineMultiSelect.value || additive) {
+      focusedLines.value = isLineSelected(line)
+        ? focusedLines.value.filter(item => item.id !== line.id)
+        : [...focusedLines.value, line]
+    }
+    else {
+      focusedLines.value = [line]
+    }
+    clearHover()
   }
 
-  const setHoveringStation = (station: Station | null, line: Line | null) => {
-    if (focusedLine.value)
-      return
-    hoveringStation.value = station
-    station && (hoveringLine.value = line)
+  function toggleLineMultiSelect() {
+    lineMultiSelect.value = !lineMultiSelect.value
+    if (!lineMultiSelect.value)
+      focusedLines.value = focusedLines.value.slice(-1)
   }
-  const setHoveringPosition = (position: Position) => {
+
+  function selectAllLines(lines: Line[]) {
+    lineMultiSelect.value = true
+    const cityIds = new Set(lines.map(line => line.cityId))
+    focusedLines.value = [...focusedLines.value.filter(line => !cityIds.has(line.cityId)), ...lines]
+    clearHover()
+  }
+
+  function retainCities(cityIds: Set<string>) {
+    focusedLines.value = focusedLines.value.filter(line => cityIds.has(line.cityId))
+    clearHover()
+  }
+
+  function setHoveringLine(line: Line | null) {
+    hoveringLine.value = (line && !isLineSelected(line)) ? line : null
+  }
+
+  function setHoveringStation(station: Station | null, line: Line | null) {
+    hoveringStation.value = station
+    if (station && line)
+      setHoveringLine(line)
+  }
+
+  function setHoveringPosition(position: { x: number; y: number }) {
     hoveringPosition.value = position
   }
 
-  const reset = () => {
-    focusedLine.value = null
-    hoveringLine.value = null
-    hoveringStation.value = null
+  function reset() {
+    focusedLines.value = []
+    clearHover()
     hoveringPosition.value = { x: -1, y: -1 }
   }
 
   return {
-    focusedLine,
+    focusedLines,
+    lineMultiSelect,
     hoveringLine,
     hoveringStation,
     hoveringPosition,
-
-    setFocusedLine,
+    isLineSelected,
+    selectLine,
+    toggleLineMultiSelect,
+    selectAllLines,
+    retainCities,
     setHoveringLine,
     setHoveringStation,
     setHoveringPosition,

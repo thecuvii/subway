@@ -1,118 +1,110 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-
-import type { LayersList } from '@deck.gl/core/typed'
+import type { LayersList, PickingInfo } from '@deck.gl/core/typed'
 import MapContainerClient from './MapContainer.client.vue'
-import type { City, Line } from '~/types'
+import type { Bound, Line } from '~/types'
 import { useAppStore } from '~/store/app.store'
 import LineDetailLayer from '~/layers/line-detail.layer'
-import type { MapContainer } from '~/.nuxt/components'
 import LineLayer from '~/layers/lines.layer'
 import StationsLayer from '~/layers/stations.layer'
 import { useInteractorStore } from '~/store/interactor.store'
 
-const mapRef = ref<InstanceType<typeof MapContainer> | null>(null)
+const mapRef = ref<InstanceType<typeof MapContainerClient> | null>(null)
 const selectorsRef = ref<HTMLDivElement>()
-const layers = ref<LayersList>()
-
+const layers = shallowRef<LayersList>()
 const appStore = useAppStore()
 const interactorStore = useInteractorStore()
 const { dataset, selectedCities } = storeToRefs(appStore)
-const { focusedLine, hoveringLine } = storeToRefs(interactorStore)
+const { focusedLines, hoveringLine, lineMultiSelect } = storeToRefs(interactorStore)
+const ctrlPressed = useKeyModifier('Control')
 const { setDetailCity } = appStore
-const { setFocusedLine, reset: resetInteractors } = interactorStore
+const { selectLine } = interactorStore
 
-watchEffect(async () => {
+watchEffect(() => {
   const zoom = mapRef.value?.getZoom() || 0
-
-  const selectedLineLayer = focusedLine.value
-    ? new LineDetailLayer({
-      id: 'hoveringline',
-      data: focusedLine.value,
-      pickable: true,
-      labels: zoom >= 11,
-      onClick() {
-        setFocusedLine(null)
-      },
-    })
-    : null
-
+  const selectFromMap = (line: Line, event: { srcEvent?: Event }) => {
+    const additive = (event.srcEvent as MouseEvent | undefined)?.ctrlKey || false
+    selectLine(line, additive || interactorStore.isLineSelected(line))
+    zoomToLines()
+  }
+  const selectedLineLayers = focusedLines.value.map(line => new LineDetailLayer({
+    id: `selected-${line.id}`,
+    data: line,
+    pickable: true,
+    labels: zoom >= 11,
+    onClick(_info: PickingInfo, event: { srcEvent?: Event }) {
+      selectFromMap(line, event)
+    },
+  }))
   const hoveringLineLayer = hoveringLine.value
     ? new LineDetailLayer({
-      id: 'hoveringline',
+      id: `hovering-${hoveringLine.value.id}`,
       data: hoveringLine.value,
       pickable: true,
-      onClick() {
+      onClick(_info: PickingInfo, event: { srcEvent?: Event }) {
         const line = hoveringLine.value
-        if (!line)
-          return
-        setFocusedLine(line)
-        zoomToLine(line)
+        if (line)
+          selectFromMap(line, event)
       },
     })
     : null
-
   const cities = dataset.value.filter(city => selectedCities.value.has(city))
-
-  const lineLayers = cities.map(city => city.lines.map(line => [new LineLayer({
-    id: line.id,
-    data: line,
-    visible: !focusedLine.value,
-  }), new StationsLayer({ id: `${line.id}-stations`, data: line, visible: !focusedLine.value && zoom >= 10 })]))
-
-  requestAnimationFrame(() => {
-    layers.value = [lineLayers, selectedLineLayer, hoveringLineLayer]
-  })
+  const lineLayers = cities.map(city => city.lines.map(line => [
+    new LineLayer({
+      id: line.id,
+      data: line,
+      visible: (!focusedLines.value.length || lineMultiSelect.value || !!ctrlPressed.value) && !interactorStore.isLineSelected(line),
+      onClick(_info: PickingInfo, event: { srcEvent?: Event }) {
+        selectFromMap(line, event)
+      },
+    }),
+    new StationsLayer({
+      id: `${line.id}-stations`,
+      data: line,
+      visible: (!focusedLines.value.length || lineMultiSelect.value || !!ctrlPressed.value) && !interactorStore.isLineSelected(line) && zoom >= 10,
+      onClick(_info: PickingInfo, event: { srcEvent?: Event }) {
+        selectFromMap(line, event)
+      },
+    }),
+  ]))
+  layers.value = [lineLayers, selectedLineLayers, hoveringLineLayer]
 })
 
 function getBoundsPadding() {
-  return {
-    top: 25,
-    right: 150,
-    bottom: 25,
-    left: (selectorsRef.value?.clientWidth || 0) + 25,
-  }
+  return { top: 25, right: 150, bottom: 25, left: (selectorsRef.value?.clientWidth || 0) + 25 }
 }
 
-function zoomToCity(city: City) {
-  resetInteractors()
-  mapRef.value?.fitBounds(city.bound, {
-    padding: getBoundsPadding(),
-    duration: 800,
-  })
+function zoomToBounds(bounds: Bound[]) {
+  if (!bounds.length)
+    return
+  const merged: Bound = [
+    [Math.min(...bounds.map(bound => bound[0][0])), Math.min(...bounds.map(bound => bound[0][1]))],
+    [Math.max(...bounds.map(bound => bound[1][0])), Math.max(...bounds.map(bound => bound[1][1]))],
+  ]
+  mapRef.value?.fitBounds(merged, { padding: getBoundsPadding(), duration: 800 })
 }
 
-function zoomToLine(line: Line) {
-  mapRef.value?.fitBounds(line.bound, {
-    padding: getBoundsPadding(),
-  })
+function zoomToCities() {
+  zoomToBounds([...selectedCities.value].map(city => city.bound))
+}
+
+function zoomToLines() {
+  if (focusedLines.value.length)
+    zoomToBounds(focusedLines.value.map(line => line.bound))
 }
 </script>
 
 <template>
   <MapContainerClient ref="mapRef" :layers="layers" />
   <section ref="selectorsRef" class="fixed left-4 z-[2] inset-y-4 flex items-start">
-    <CitySelect
-      @on-zoom="zoomToCity"
-      @city-select="zoomToCity"
-    />
-
+    <CitySelect @selection-change="zoomToCities" />
     <div class="ml-3">
-      <CityDetail
-        @line-select="(line: Line) => {
-          zoomToLine(line)
-        }"
-        @close="() => setDetailCity(null)"
-      />
+      <CityDetail @selection-change="zoomToLines" @close="() => setDetailCity(null)" />
     </div>
   </section>
   <LineDetail
     @station-click="(station) => {
-      mapRef?.flyTo({
-        center: station.coord,
-        essential: true,
-        zoom: 15,
-      })
+      mapRef?.flyTo({ center: station.coord, essential: true, zoom: 15 })
     }"
   />
   <Tooltip />
