@@ -55,10 +55,10 @@ watchEffect(async () => {
   const cities = dataset.value.filter(city => selectedCities.value.has(city))
 
   const lineLayers = cities.map(city => city.lines.map(line => [new LineLayer({
-    id: line.id,
+    id: `${city.id}-${line.id}`,
     data: line,
     visible: !focusedLine.value,
-  }), new StationsLayer({ id: `${line.id}-stations`, data: line, visible: !focusedLine.value && zoom >= 10 })]))
+  }), new StationsLayer({ id: `${city.id}-${line.id}-stations`, data: line, visible: !focusedLine.value && zoom >= 10 })]))
 
   requestAnimationFrame(() => {
     layers.value = [lineLayers, selectedLineLayer, hoveringLineLayer]

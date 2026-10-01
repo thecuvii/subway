@@ -8,3 +8,4 @@ dist
 .vercel
 .env*.local
 .DS_Store
+.data-cache/
